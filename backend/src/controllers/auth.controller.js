@@ -5,41 +5,56 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateAccessToken } from "../utils/token.util.js";
 import { generateRefreshToken } from "../utils/token.util.js";
+import { v4 as uuidv4 } from "uuid";
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { name, email, password } = req.body;
+  const { name, email, password } = req.body;
 
-    if (!name || !email || !password) throw new ApiError(400, "All fields are required");
+  const trimmedName = name?.trim();
+  const trimmedEmail = email?.trim().toLowerCase();
 
-    const [existing] = await db.query(
-        "SELECT user_id FROM users WHERE email = ?",
-        [email]
-    );
+  if (!trimmedName || !trimmedEmail || !password) {
+    throw new ApiError(400, "All fields are required");
+  }
 
-    if (existing.length > 0) {
-        throw new ApiError(409, "User already exists");
-    }
+  // Check if user already exists
+  const [existing] = await db.query(
+    "SELECT user_id FROM users WHERE email = ?",
+    [trimmedEmail]
+  );
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+  if (existing.length > 0) {
+    throw new ApiError(409, "User already exists");
+  }
 
-    await db.query(
-        `INSERT INTO users (user_id, name, email, password_hash, role)
-        VALUES (UUID(), ?, ?, ?, 'VOTER')`,
-        [name, email, hashedPassword]
-    );
+  // Hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
 
-    const [users] = await db.query(
+  const userId = uuidv4();
+
+  // Insert user
+  await db.query(
+    `INSERT INTO users (user_id, name, email, password_hash, role)
+     VALUES (?, ?, ?, ?, 'VOTER')`,
+    [userId, trimmedName, trimmedEmail, hashedPassword]
+  );
+
+  // Fetch created user
+  const [users] = await db.query(
     `SELECT user_id, name, email, role, created_at
-     FROM users WHERE email = ?`,
-    [email]
-    );
+     FROM users WHERE user_id = ?`,
+    [userId]
+  );
 
-    if (users.length === 0) throw new ApiError(500, "User registration failed");
+  if (users.length === 0) {
+    throw new ApiError(500, "User registration failed");
+  }
 
-    return res
-    .status(201)
-    .json(new ApiResponse(201, users[0], "User registered successfully"));
+  return res.status(201).json(
+    new ApiResponse(201, users[0], "User registered successfully")
+  );
 });
+
 
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
@@ -108,6 +123,58 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json( new ApiResponse(200, null, "Logged out successfully"));
 });
 
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const oldRefreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+
+    if (!oldRefreshToken) throw new ApiError(401, "Unauthorized request.");
+
+    let decodedInfo;
+    try {
+        decodedInfo = jwt.verify(
+        oldRefreshToken,
+        process.env.REFRESH_TOKEN_SECRET
+        );
+    } catch (error) {
+        throw new ApiError(401, "Invalid or expired refresh token.");
+    }
+
+    const [rows] = await db.query(
+        "SELECT user_id, role FROM users WHERE user_id = ?",
+        [decodedInfo.user_id]
+    );
+
+    if (rows.length === 0) {
+        throw new ApiError(401, "Invalid refresh token.");
+    }
+
+    const user = rows[0];
+
+    const accessToken = generateAccessToken({
+        user_id: user.user_id,
+        role: user.role
+    });
+
+    const refreshToken = generateRefreshToken({
+        user_id: user.user_id
+    });
+
+    const options = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict"
+    };
+
+    return res
+        .status(200)
+        .cookie("refreshToken", refreshToken, options)
+        .json(
+        new ApiResponse(
+            200,
+            { accessToken },
+            "Access token refreshed successfully."
+        )
+        );
+});
 
 const getCurrentUser = asyncHandler(async (req, res) => {
   if (!req.user) {
@@ -120,4 +187,4 @@ const getCurrentUser = asyncHandler(async (req, res) => {
 
 });
 
-export { registerUser, loginUser, logoutUser, getCurrentUser }
+export { registerUser, loginUser, logoutUser, getCurrentUser, refreshAccessToken }
