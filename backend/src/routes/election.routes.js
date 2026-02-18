@@ -3,7 +3,8 @@ import {
   createElection,
   deleteElection,
   getAllElections,
-  getElectionById
+  getElectionById,
+  updateElection
 } from "../controllers/election.controller.js";
 
 import { verifyJWT } from "../middlewares/jwt.middleware.js";
@@ -11,23 +12,17 @@ import { authorizeRole } from "../middlewares/role.middleware.js";
 
 const router = express.Router();
 
-router.post(
-  "/",
-  verifyJWT,
-  authorizeRole("ADMIN"),
-  createElection
-);
+router.post("/", verifyJWT, authorizeRole("ADMIN"), createElection);
 
-router.get(
-  "/",
-  verifyJWT,
-  getAllElections
-);
+router.get("/", verifyJWT, getAllElections);
 
-router.get(
+router.get("/:electionId", verifyJWT, getElectionById);
+
+router.patch(
   "/:electionId",
   verifyJWT,
-  getElectionById
+  authorizeRole("ADMIN"),
+  updateElection
 );
 
 router.delete(
@@ -35,13 +30,6 @@ router.delete(
   verifyJWT,
   authorizeRole("ADMIN"),
   deleteElection
-);
-
-router.patch(
-  "/:electionId",
-  verifyJWT,
-  authorizeRole("ADMIN"),
-  updateElection
 );
 
 export default router;

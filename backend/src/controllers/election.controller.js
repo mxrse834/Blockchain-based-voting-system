@@ -2,6 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { v4 as uuidv4 } from "uuid";
+import db from "../db/connection.js"
 
 const createElection = asyncHandler(async (req, res) => {
     const { title, startTime, endTime } = req.body;
@@ -190,7 +191,59 @@ const updateElection = asyncHandler(async (req, res) => {
 
 
 const addCandidateToElection = asyncHandler(async (req, res) => {
+  const { electionId } = req.params;
+  const { name } = req.body;
 
+  const trimmedName = name?.trim();
+
+  if (!electionId) {
+    throw new ApiError(400, "Election id is required");
+  }
+
+  if (!isUuid(electionId)) {
+    throw new ApiError(400, "Invalid election id format");
+  }
+
+  if (!trimmedName) {
+    throw new ApiError(400, "Candidate name is required");
+  }
+
+  const [election] = await db.query(
+    "SELECT election_id FROM elections WHERE election_id = ?",
+    [electionId]
+  );
+
+  if (election.length === 0) {
+    throw new ApiError(404, "Election does not exist");
+  }
+
+  const [existingCandidate] = await db.query(
+    "SELECT candidate_id FROM candidates WHERE name = ? AND election_id = ?",
+    [trimmedName, electionId]
+  );
+
+  if (existingCandidate.length > 0) {
+    throw new ApiError(409, "Candidate already exists in this election");
+  }
+
+  const candidateId = uuidv4();
+
+  await db.query(
+    `INSERT INTO candidates (candidate_id, election_id, name)
+     VALUES (?, ?, ?)`,
+    [candidateId, electionId, trimmedName]
+  );
+
+  const [candidate] = await db.query(
+    `SELECT candidate_id, name, election_id
+     FROM candidates WHERE candidate_id = ?`,
+    [candidateId]
+  );
+
+  return res.status(201).json(
+    new ApiResponse(201, candidate[0], "Candidate added successfully")
+  );
 });
+
 
 export { createElection, getAllElections, getElectionById, deleteElection, updateElection, addCandidateToElection }
