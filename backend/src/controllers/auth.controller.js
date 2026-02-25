@@ -6,6 +6,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { generateAccessToken } from "../utils/token.util.js";
 import { generateRefreshToken } from "../utils/token.util.js";
 import { v4 as uuidv4 } from "uuid";
+import jwt from "jsonwebtoken";
 
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -17,6 +18,10 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
+  if (password.length < 6) {
+    throw new ApiError(400, "Password must be at least 6 characters");
+    }
+    
   // Check if user already exists
   const [existing] = await db.query(
     "SELECT user_id FROM users WHERE email = ?",
@@ -55,18 +60,19 @@ const registerUser = asyncHandler(async (req, res) => {
   );
 });
 
-
 const loginUser = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
+    const trimmedEmail = email?.trim().toLowerCase();
+
+    if (!trimmedEmail || !password) {
         throw new ApiError(400, "Email and password are required");
     }
 
     const [users] = await db.query(
         `SELECT user_id, name, email, role, password_hash, created_at
         FROM users WHERE email = ?`,
-        [email]
+        [trimmedEmail]
     );
 
     if (users.length === 0) {
@@ -93,19 +99,20 @@ const loginUser = asyncHandler(async (req, res) => {
         user_id: user.user_id
     });
 
+    // Remove password before sending response
     delete user.password_hash;
 
     res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
     return res.status(200).json(
         new ApiResponse(
         200,
-        { user, accessToken},
+        { user, accessToken },
         "Login successful"
         )
     );

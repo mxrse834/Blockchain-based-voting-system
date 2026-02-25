@@ -1,5 +1,5 @@
-const mysql = require("mysql2/promise");
-const config = require("../config/db.config");
+import mysql from "mysql2/promise";
+import config from "../config/db.config.js";
 
 const pool = mysql.createPool({
   host: config.host,
@@ -21,4 +21,4 @@ pool.getConnection()
     console.error("MySQL connection failed:", err);
   });
 
-module.exports = pool;
+export default pool;
