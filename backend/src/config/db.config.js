@@ -1,7 +1,7 @@
 export default {
   host: "localhost",
   user: "root",
-  password: "brincy123",
-  database: "voting_systems",
+  password: "root123",
+  database: "voting_system",
   port: 3306
 };
