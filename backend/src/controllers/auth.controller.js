@@ -1,4 +1,4 @@
-import { asyncHandler } from "../utils/asyncHandler";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import bcrypt from "bcrypt";
 import db from "../db/connection.js"
 import { ApiError } from "../utils/ApiError.js";
