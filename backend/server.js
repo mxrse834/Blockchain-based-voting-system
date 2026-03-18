@@ -1,12 +1,22 @@
-import "./src/db/connection.js";   // just initialize DB
+import "./src/db/connection.js"; // DB init
+
 import express from "express";
 import cookieParser from "cookie-parser";
 import blockchain from "./src/utils/blockchain.service.js";
+
+// ✅ import routes
+import authRoutes from "./src/routes/auth.routes.js";
+import electionRoutes from "./src/routes/election.routes.js";
+import votingRoutes from "./src/routes/vote.routes.js";
 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
+
+// ✅ use routes
+app.use("/auth", authRoutes);
+app.use("/elections", electionRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend is running");
@@ -17,9 +27,9 @@ const PORT = 5000;
 (async function start() {
   try {
     await blockchain.init();
-    console.log('Blockchain service initialized');
+    console.log("Blockchain service initialized");
   } catch (err) {
-    console.warn('Blockchain init warning:', err.message);
+    console.warn("Blockchain init warning:", err.message);
   }
 
   app.listen(PORT, () => {

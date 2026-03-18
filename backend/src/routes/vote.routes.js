@@ -1,6 +1,6 @@
 import express from "express";
 import { castVote, getElectionResults, getMyVote } from "../controllers/vote.controller.js";
-import { verifyJWT } from "../middlewares/jwt.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 

@@ -7,7 +7,7 @@ import {
   updateElection
 } from "../controllers/election.controller.js";
 
-import { verifyJWT } from "../middlewares/jwt.middleware.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 import { authorizeRole } from "../middlewares/role.middleware.js";
 
 const router = express.Router();
