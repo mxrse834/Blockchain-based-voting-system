@@ -32,14 +32,22 @@ CREATE TABLE candidates (
 CREATE TABLE voting_status (
   user_id CHAR(36) NOT NULL,
   election_id CHAR(36) NOT NULL,
+  candidate_id CHAR(36),   
   has_voted BOOLEAN DEFAULT FALSE,
   tx_hash TEXT,
   voted_at TIMESTAMP,
+
   PRIMARY KEY (user_id, election_id),
+
   FOREIGN KEY (user_id)
     REFERENCES users(user_id)
     ON DELETE CASCADE,
+
   FOREIGN KEY (election_id)
     REFERENCES elections(election_id)
+    ON DELETE CASCADE,
+
+  FOREIGN KEY (candidate_id)
+    REFERENCES candidates(candidate_id)
     ON DELETE CASCADE
 ) ENGINE=InnoDB;

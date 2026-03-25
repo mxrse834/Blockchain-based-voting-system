@@ -14,107 +14,94 @@ const castVote = asyncHandler(async (req, res) => {
   if (!isUuid(electionId)) throw new ApiError(400, "Invalid election id");
   if (!isUuid(candidateId)) throw new ApiError(400, "Invalid candidate id");
 
+  // Check election
   const [election] = await db.query(
-    "SELECT election_id, start_time, end_time FROM elections WHERE election_id = ?",
+    "SELECT start_time, end_time FROM elections WHERE election_id = ?",
     [electionId]
   );
   if (election.length === 0) throw new ApiError(404, "Election not found");
 
   const now = new Date();
-  const { start_time, end_time } = election[0];
-  if (now < new Date(start_time)) throw new ApiError(400, "Election has not started yet");
-  if (now > new Date(end_time)) throw new ApiError(400, "Election has ended");
+  if (now < new Date(election[0].start_time))
+    throw new ApiError(400, "Election has not started yet");
+  if (now > new Date(election[0].end_time))
+    throw new ApiError(400, "Election has ended");
 
+  // Check candidate belongs to election
   const [candidate] = await db.query(
     "SELECT candidate_id FROM candidates WHERE candidate_id = ? AND election_id = ?",
     [candidateId, electionId]
   );
-  if (candidate.length === 0) throw new ApiError(404, "Candidate not found in this election");
+  if (candidate.length === 0)
+    throw new ApiError(404, "Candidate not found in this election");
 
-  const [existingVote] = await db.query(
-    "SELECT vote_id FROM votes WHERE election_id = ? AND user_id = ?",
-    [electionId, userId]
+  // Check if already voted
+  const [existing] = await db.query(
+    "SELECT has_voted FROM voting_status WHERE user_id = ? AND election_id = ?",
+    [userId, electionId]
   );
-  if (existingVote.length > 0) throw new ApiError(409, "You have already voted in this election");
 
-  const voteId = uuidv4();
+  if (existing.length > 0 && existing[0].has_voted)
+    throw new ApiError(409, "You have already voted");
+
+  // Insert or update voting_status
   await db.query(
-    `INSERT INTO votes (vote_id, election_id, candidate_id, user_id)
-     VALUES (?, ?, ?, ?)`,
-    [voteId, electionId, candidateId, userId]
+    `
+    INSERT INTO voting_status (user_id, election_id, has_voted, candidate_id, voted_at)
+    VALUES (?, ?, TRUE, ?, NOW())
+    ON DUPLICATE KEY UPDATE
+      has_voted = TRUE,
+      candidate_id = VALUES(candidate_id),
+      voted_at = NOW()
+    `,
+    [userId, electionId, candidateId]
   );
-
-  // Optionally send the vote on-chain if enabled and an on-chain candidate index is provided.
-  let onchainResult = null;
-  try {
-    if (process.env.ENABLE_ONCHAIN === 'true') {
-      const onchainIndex = req.body.onchainIndex ?? (candidate[0] && candidate[0].onchain_index);
-      if (onchainIndex !== undefined && onchainIndex !== null) {
-        try {
-          const tx = await blockchain.sendTx('vote', Number(onchainIndex));
-          const receipt = await tx.wait();
-          onchainResult = { txHash: receipt.transactionHash || tx.hash, blockNumber: receipt.blockNumber };
-        } catch (err) {
-          console.error('On-chain vote failed:', err.message || err);
-          onchainResult = { error: err.message || String(err) };
-        }
-      }
-    }
-  } catch (err) {
-    console.warn('Blockchain integration skipped:', err.message || err);
-  }
 
   return res.status(201).json(
-    new ApiResponse(201, { candidateId, onchain: onchainResult }, "Vote cast successfully")
+    new ApiResponse(201, { candidateId }, "Vote cast successfully")
   );
 });
 
 const getElectionResults = asyncHandler(async (req, res) => {
   const { electionId } = req.params;
-  if (!isUuid(electionId)) throw new ApiError(400, "Invalid election id");
 
   const [results] = await db.query(
     `
     SELECT 
       c.candidate_id,
       c.name,
-      COUNT(v.vote_id) AS vote_count,
-      (COUNT(v.vote_id)/(SELECT COUNT(*) FROM votes WHERE election_id = ?))*100 AS vote_percent
+      COUNT(vs.user_id) AS vote_count
     FROM candidates c
-    LEFT JOIN votes v ON c.candidate_id = v.candidate_id
+    LEFT JOIN voting_status vs 
+      ON c.candidate_id = vs.candidate_id AND vs.has_voted = TRUE
     WHERE c.election_id = ?
     GROUP BY c.candidate_id
     ORDER BY vote_count DESC
     `,
-    [electionId, electionId]
+    [electionId]
   );
 
   return res.status(200).json(
-    new ApiResponse(200, results, "Election results fetched successfully")
+    new ApiResponse(200, results, "Results fetched successfully")
   );
 });
 
 const getMyVote = asyncHandler(async (req, res) => {
   const { electionId } = req.params;
   const userId = req.user?.user_id;
-  if (!isUuid(electionId)) throw new ApiError(400, "Invalid election id");
 
   const [vote] = await db.query(
     `
-    SELECT v.candidate_id, c.name
-    FROM votes v
-    JOIN candidates c ON v.candidate_id = c.candidate_id
-    WHERE v.election_id = ? AND v.user_id = ?
+    SELECT c.candidate_id, c.name
+    FROM voting_status vs
+    JOIN candidates c ON vs.candidate_id = c.candidate_id
+    WHERE vs.user_id = ? AND vs.election_id = ?
     `,
-    [electionId, userId]
+    [userId, electionId]
   );
 
   return res.status(200).json(
-    new ApiResponse(
-      200,
-      vote.length > 0 ? vote[0] : null,
-      "Vote fetched successfully"
-    )
+    new ApiResponse(200, vote.length ? vote[0] : null, "Vote fetched successfully")
   );
 });
 
