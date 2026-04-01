@@ -1,0 +1,104 @@
+.voting-content {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.election-info {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.election-info h2 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.candidates-list {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.candidates-list h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.candidate-option {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 0.75rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.candidate-option:hover {
+  border-color: #667eea;
+  background: #f8f9ff;
+}
+
+.candidate-option.selected {
+  background: #e8ebff;
+  border-color: #667eea;
+}
+
+.candidate-option input {
+  margin-right: 1rem;
+  cursor: pointer;
+}
+
+.candidate-option label {
+  cursor: pointer;
+  flex: 1;
+  margin: 0;
+  color: #333;
+}
+
+.voting-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.voting-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.voting-actions button:not(.secondary) {
+  background: #667eea;
+  color: white;
+}
+
+.voting-actions button:not(.secondary):hover:not(:disabled) {
+  background: #5568d3;
+}
+
+.voting-actions button.secondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+}
+
+.voting-actions button.secondary:hover {
+  background: #f8f9ff;
+}
+
+.voting-actions button:disabled {
+  background: #ccc;
+  color: #999;
+  cursor: not-allowed;
+}

@@ -28,7 +28,7 @@ const createCandidate = asyncHandler(async (req, res) => {
   );
 
   return res.status(201).json(
-    new ApiResponse(201, { candidateId, name }, "Candidate created successfully")
+    new ApiResponse(201, { candidate_id: candidateId, name: name.trim(), election_id: electionId }, "Candidate added successfully")
   );
 });
 
@@ -40,8 +40,15 @@ const getCandidatesByElection = asyncHandler(async (req, res) => {
 
   if (!isUuid(electionId)) throw new ApiError(400, "Invalid election id");
 
+  // Check election exists
+  const [electionCheck] = await db.query(
+    "SELECT election_id FROM elections WHERE election_id = ?",
+    [electionId]
+  );
+  if (electionCheck.length === 0) throw new ApiError(404, "Election not found");
+
   const [candidates] = await db.query(
-    "SELECT candidate_id, name FROM candidates WHERE election_id = ?",
+    "SELECT candidate_id, name, election_id FROM candidates WHERE election_id = ?",
     [electionId]
   );
 

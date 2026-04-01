@@ -1,17 +1,26 @@
+import "dotenv/config";
 import "./src/db/connection.js"; // DB init
 
 import express from "express";
 import cookieParser from "cookie-parser";
+import cors from "cors";
 import blockchain from "./src/utils/blockchain.service.js";
+import { errorHandler } from "./src/middlewares/error.middleware.js";
 
 // ✅ import routes
 import authRoutes from "./src/routes/auth.routes.js";
 import electionRoutes from "./src/routes/election.routes.js";
 import votingRoutes from "./src/routes/vote.routes.js";
-import candidateRoutes from "./src/routes/candidates.routes.js";
 
 const app = express();
 
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:3000",
+  credentials: true,
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
 app.use(express.json());
 app.use(cookieParser());
 
@@ -19,13 +28,15 @@ app.use(cookieParser());
 app.use("/auth", authRoutes);
 app.use("/elections", electionRoutes);
 app.use("/votes", votingRoutes);
-app.use("/candidates", candidateRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend is running");
 });
 
-const PORT = 5000;
+// Error handler middleware
+app.use(errorHandler);
+
+const PORT = process.env.PORT || 5000;
 
 (async function start() {
   try {

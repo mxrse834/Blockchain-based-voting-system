@@ -1,7 +1,7 @@
 export default {
-  host: "localhost",
-  user: "root",
-  password: "root123",
-  database: "voting_system",
-  port: 3306
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "root123",
+  database: process.env.DB_NAME || "voting_system",
+  port: process.env.DB_PORT || 3306
 };

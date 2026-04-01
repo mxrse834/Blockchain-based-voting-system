@@ -1,0 +1,133 @@
+.detail-content {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.detail-content .election-info {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.detail-content .election-info h2 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.detail-content .election-info p {
+  margin: 0.5rem 0;
+  color: #666;
+}
+
+.detail-content .secondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+
+.detail-content .secondary:hover {
+  background: #f8f9ff;
+}
+
+.add-candidate-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.add-candidate-section h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.add-candidate-section form {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.add-candidate-section input {
+  flex: 1;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+.add-candidate-section input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.add-candidate-section button {
+  padding: 0.75rem 1.5rem;
+  background: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s;
+}
+
+.add-candidate-section button:hover {
+  background: #229954;
+}
+
+.candidates-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.candidates-section h3 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.candidates-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.candidate-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  margin-bottom: 0.75rem;
+  background: #f9f9f9;
+}
+
+.candidate-item span {
+  color: #333;
+  font-weight: 500;
+}
+
+.candidate-item .delete-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.3s;
+}
+
+.candidate-item .delete-btn:hover {
+  background: #c0392b;
+}

@@ -1,0 +1,112 @@
+.admin-content {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.admin-content h2 {
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.elections-table {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.elections-table table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.elections-table thead {
+  background: #f8f9fa;
+  border-bottom: 2px solid #ddd;
+}
+
+.elections-table th {
+  padding: 1rem;
+  text-align: left;
+  color: #333;
+  font-weight: 600;
+}
+
+.elections-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #eee;
+  color: #666;
+}
+
+.elections-table tbody tr:hover {
+  background: #f8f9fa;
+}
+
+.elections-table td .status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  display: inline-block;
+}
+
+.elections-table td .status.ACTIVE {
+  background: #d4edda;
+  color: #155724;
+}
+
+.elections-table td .status.UPCOMING {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.elections-table td .status.CLOSED {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.elections-table .edit-btn,
+.elections-table .delete-btn {
+  padding: 0.5rem 0.75rem;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+  transition: all 0.3s;
+}
+
+.elections-table .edit-btn {
+  background: #667eea;
+  color: white;
+}
+
+.elections-table .edit-btn:hover {
+  background: #5568d3;
+}
+
+.elections-table .delete-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.elections-table .delete-btn:hover {
+  background: #c0392b;
+}
+
+.navbar .primary {
+  background: #27ae60;
+  padding: 0.5rem 1rem;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  margin-right: 0.5rem;
+  transition: background 0.3s;
+}
+
+.navbar .primary:hover {
+  background: #229954;
+}
