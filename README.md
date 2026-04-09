@@ -1,21 +1,90 @@
-# Blockchain-based-voting-system
+# Blockchain-based Voting System
 
-To run something Remix compatible, you need:
+A decentralized voting platform.
+## Tech Stack
 
-    Solidity Code Without Unsupported Imports
-        No imports like hardhat/console.sol or other environment-specific libraries that Remix doesn't support.
-        Use only standard Solidity and Remix-supported libraries.
+- **Frontend**: React 18 + Vite + Recharts (for visualization)
+- **Backend**: Node.js + Express + MySQL
+- **Blockchain**: Solidity 0.8.19, Hardhat + ethers.js
+- **Authentication**: JWT (access + refresh tokens)  
+- **Wallet**: MetaMask integration
 
-    Consistent Solidity Version
-        Use pragma statements compatible with the Remix compiler version you select (usually ^0.8.x).
-        Avoid mixing pragma versions.
+## Prerequisites
 
-    Tests Written in Solidity (if using Remix tests)
-        Remix supports Solidity tests via remix_tests.sol.
-        JavaScript/TypeScript tests (e.g., Hardhat tests) won’t run inside Remix unless you use an external environment.
+- Node.js 16+ and npm
+- MySQL 8.0+
+- MetaMask browser extension
 
-    No Hardhat or Truffle Specific Code
-        Code and tests should not depend on Hardhat, Truffle, or other frameworks’ features or console/logging.
+## Installation & Setup
 
-    Use Remix’s Web3 Provider or Injected Provider
-        Remix uses its own provider or connects to MetaMask or other injected wallets for deployment and interaction.
+### 1. Install Dependencies
+
+```bash
+npm install
+cd backend && npm install && cd ..
+cd frontend && npm install && cd ..
+```
+
+### 2. Setup MySQL
+
+```bash
+mysql -u root -p
+CREATE DATABASE voting_system;
+SOURCE backend/database/schema.sql;
+```
+
+### 3. Configure Environment Variables
+
+**Backend** (`backend/.env`):
+```env
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=voting_system
+JWT_SECRET=long_random_string_here
+REFRESH_TOKEN_SECRET=another_long_random_string
+PORT=5000
+```
+
+**Frontend** (`frontend/.env`):
+```env
+VITE_API_URL=http://localhost:5000
+VITE_CONTRACT_ADDRESS=0x... (set after contract deployment)
+```
+
+## Running the System
+
+**Terminal 1 - Local Blockchain:**
+```bash
+npm run chain
+```
+
+**Terminal 2 - Deploy Contract:**
+```bash
+npm run deploy
+```
+
+Copy contract address → update `frontend/.env` VITE_CONTRACT_ADDRESS
+
+**Terminal 3 - Backend:**
+```bash
+cd backend && npm run dev
+```
+
+**Terminal 4 - Frontend:**
+```bash
+cd frontend && npm run dev
+```
+
+## Key Features
+
+✅ JWT authentication with role-based access
+✅ Dynamic election status (UPCOMING → ACTIVE → CLOSED)
+✅ On-chain voting with MetaMask + MySQL database
+✅ Real-time results visualization  
+✅ Error boundary and countdown timers
+✅ Confirmation modal for voting
+
+## License
+
+MIT

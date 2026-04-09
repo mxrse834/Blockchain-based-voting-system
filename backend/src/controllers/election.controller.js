@@ -75,8 +75,14 @@ const getAllElections = asyncHandler(async (req, res) => {
      ORDER BY created_at DESC`
   );
 
+  const now = new Date();
+  const electionsWithComputedStatus = elections.map(election => ({
+    ...election,
+    status: now < election.start_time ? 'UPCOMING' : now < election.end_time ? 'ACTIVE' : 'CLOSED'
+  }));
+
   return res.status(200).json(
-    new ApiResponse(200, elections, "All elections fetched successfully")
+    new ApiResponse(200, electionsWithComputedStatus, "All elections fetched successfully")
   );
 });
 
@@ -102,8 +108,14 @@ const getElectionById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Election does not exist");
   }
 
+  const now = new Date();
+  const electionWithComputedStatus = {
+    ...election[0],
+    status: now < election[0].start_time ? 'UPCOMING' : now < election[0].end_time ? 'ACTIVE' : 'CLOSED'
+  };
+
   return res.status(200).json(
-    new ApiResponse(200, election[0], "Election fetched successfully")
+    new ApiResponse(200, electionWithComputedStatus, "Election fetched successfully")
   );
 });
 
@@ -266,11 +278,37 @@ const addCandidateToElection = asyncHandler(async (req, res) => {
   );
 });
 
+const getCandidates = asyncHandler(async (req, res) => {
+  const { electionId } = req.params;
+  if (!electionId || !isUuid(electionId)) throw new ApiError(400, "Invalid election id");
+  const [election] = await db.query("SELECT election_id FROM elections WHERE election_id = ?", [electionId]);
+  if (election.length === 0) throw new ApiError(404, "Election does not exist");
+  const [candidates] = await db.query(
+    "SELECT candidate_id, name, election_id FROM candidates WHERE election_id = ? ORDER BY name",
+    [electionId]
+  );
+  return res.status(200).json(new ApiResponse(200, candidates, "Candidates fetched successfully"));
+});
+
+const deleteCandidateFromElection = asyncHandler(async (req, res) => {
+  const { electionId, candidateId } = req.params;
+  if (!isUuid(electionId) || !isUuid(candidateId)) throw new ApiError(400, "Invalid id format");
+  const [existing] = await db.query(
+    "SELECT candidate_id FROM candidates WHERE candidate_id = ? AND election_id = ?",
+    [candidateId, electionId]
+  );
+  if (existing.length === 0) throw new ApiError(404, "Candidate not found in this election");
+  await db.query("DELETE FROM candidates WHERE candidate_id = ? AND election_id = ?", [candidateId, electionId]);
+  return res.status(200).json(new ApiResponse(200, null, "Candidate deleted successfully"));
+});
+
 export {
   createElection,
   getAllElections,
   getElectionById,
   deleteElection,
   updateElection,
-  addCandidateToElection
+  addCandidateToElection,
+  getCandidates,
+  deleteCandidateFromElection
 };

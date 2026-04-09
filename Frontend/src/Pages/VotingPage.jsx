@@ -3,10 +3,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { ethers } from 'ethers';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
+import Layout from '../components/Layout';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ConfirmModal from '../components/ConfirmModal';
 import WalletConnect from '../components/WalletConnect';
 import ElectionCountdown from '../components/ElectionCountdown';
+import StatusBadge from '../components/StatusBadge';
 import VotingABI from '../contracts/Voting.json';
-import './VotingPage.css';
+import { Vote, ArrowLeft, CheckCircle2, ExternalLink, Wallet, Timer, AlertCircle } from 'lucide-react';
 
 export default function VotingPage() {
   const navigate = useNavigate();
@@ -64,18 +68,15 @@ export default function VotingPage() {
     setShowConfirm(false);
     setTxPending(true);
     try {
-      // 1. Find the onchain index of the candidate
       const candidateIndex = candidates.findIndex(c => c.candidate_id === selectedCandidate);
       if (candidateIndex === -1) {
         throw new Error('Candidate not found');
       }
 
-      // 2. Record in backend (for off-chain query speed)
       await api.post(`/votes/${electionId}`, {
         candidateId: selectedCandidate
       });
 
-      // 3. Also write to blockchain
       const signer = await provider.getSigner();
       const contract = new ethers.Contract(
         import.meta.env.VITE_CONTRACT_ADDRESS,
@@ -93,112 +94,178 @@ export default function VotingPage() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
-
-  if (loading) return <div>Loading voting page...</div>;
-  if (!election) return <div>Election not found</div>;
+  if (loading) return <Layout><LoadingSpinner message="Loading ballot..." /></Layout>;
+  if (!election) return <Layout><div className="text-center py-20 text-surface-500">Election not found</div></Layout>;
 
   return (
-    <div className="container">
-      <nav className="navbar">
-        <h1>🗳️ Cast Your Vote</h1>
-        <div className="nav-actions">
-          <button onClick={handleLogout}>Logout</button>
-        </div>
-      </nav>
+    <Layout>
+      <div className="max-w-3xl mx-auto animate-fade-in">
+        {/* Back button */}
+        <button
+          onClick={() => navigate('/voter-elections')}
+          className="btn-ghost mb-6 -ml-3"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Elections
+        </button>
 
-      <main className="voting-content">
-        <div className="election-info">
-          <h2>{election.title}</h2>
-          <p>Status: {election.status}</p>
+        {/* Election info header */}
+        <div className="bg-white dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-700/60 shadow-card p-6 mb-6">
+          <div className="flex items-start justify-between mb-3">
+            <h1 className="text-2xl font-bold text-surface-900 dark:text-white">
+              {election.title}
+            </h1>
+            <StatusBadge status={election.status} />
+          </div>
           {election.end_time && (
-            <ElectionCountdown targetTime={election.end_time} label="Election ends in" />
+            <div className="flex items-center gap-2 text-sm text-surface-500 dark:text-surface-400">
+              <Timer className="w-4 h-4" />
+              <ElectionCountdown targetTime={election.end_time} label="Election ends in" />
+            </div>
           )}
         </div>
 
-        <div className="wallet-section">
+        {/* Wallet connect */}
+        <div className="bg-white dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-700/60 shadow-card p-6 mb-6">
+          <div className="flex items-center gap-3 mb-4">
+            <Wallet className="w-5 h-5 text-brand-600 dark:text-brand-400" />
+            <h2 className="text-lg font-semibold text-surface-900 dark:text-white">Wallet Connection</h2>
+          </div>
           <WalletConnect onConnected={handleWalletConnected} />
+          {walletAddress && (
+            <p className="mt-3 text-xs text-surface-500 dark:text-surface-400 font-mono bg-surface-50 dark:bg-surface-700/50 px-3 py-2 rounded-lg">
+              Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            </p>
+          )}
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {/* Error */}
+        {error && (
+          <div className="flex items-center gap-3 px-4 py-3 mb-6 rounded-xl bg-red-50 dark:bg-red-950/50 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-sm animate-slide-down">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            {error}
+          </div>
+        )}
 
+        {/* Candidate selection */}
         {!voteCast && (
-          <div className="candidates-list">
-            <h3>Select a Candidate:</h3>
+          <div className="bg-white dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-700/60 shadow-card p-6 mb-6">
+            <h2 className="text-lg font-semibold text-surface-900 dark:text-white mb-5">
+              Select a candidate
+            </h2>
             {candidates.length === 0 ? (
-              <p>No candidates available</p>
+              <p className="text-surface-500 dark:text-surface-400 text-sm">No candidates available</p>
             ) : (
-              candidates.map(candidate => (
-                <div 
-                  key={candidate.candidate_id} 
-                  className={`candidate-option ${selectedCandidate === candidate.candidate_id ? 'selected' : ''}`}
-                  onClick={() => {
-                    setSelectedCandidate(candidate.candidate_id);
-                    setSelectedCandidateName(candidate.name);
-                  }}
-                >
-                  <input 
-                    type="radio" 
-                    checked={selectedCandidate === candidate.candidate_id}
-                    onChange={() => {
+              <div className="space-y-3">
+                {candidates.map(candidate => (
+                  <button
+                    key={candidate.candidate_id}
+                    onClick={() => {
                       setSelectedCandidate(candidate.candidate_id);
                       setSelectedCandidateName(candidate.name);
                     }}
-                  />
-                  <label>{candidate.name}</label>
-                </div>
-              ))
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+                      selectedCandidate === candidate.candidate_id
+                        ? 'border-brand-500 bg-brand-50 dark:bg-brand-950/30 ring-2 ring-brand-500/20'
+                        : 'border-surface-200 dark:border-surface-700 hover:border-surface-300 dark:hover:border-surface-600 bg-surface-50 dark:bg-surface-800/50'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                      selectedCandidate === candidate.candidate_id
+                        ? 'border-brand-500 bg-brand-500'
+                        : 'border-surface-300 dark:border-surface-600'
+                    }`}>
+                      {selectedCandidate === candidate.candidate_id && (
+                        <div className="w-2.5 h-2.5 rounded-full bg-white" />
+                      )}
+                    </div>
+                    <span className={`font-medium ${
+                      selectedCandidate === candidate.candidate_id
+                        ? 'text-brand-700 dark:text-brand-300'
+                        : 'text-surface-700 dark:text-surface-300'
+                    }`}>
+                      {candidate.name}
+                    </span>
+                  </button>
+                ))}
+              </div>
             )}
           </div>
         )}
 
+        {/* Actions */}
         {!voteCast && (
-          <div className="voting-actions">
-            <button 
-              onClick={() => setShowConfirm(true)} 
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowConfirm(true)}
               disabled={!selectedCandidate || !provider || txPending}
+              className="btn-primary flex-1 py-3.5"
             >
-              {txPending ? 'Processing...' : 'Cast Vote'}
-            </button>
-            <button onClick={() => navigate('/voter-elections')} className="secondary">
-              Back to Elections
+              {txPending ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Vote className="w-5 h-5" />
+                  Cast Vote
+                </>
+              )}
             </button>
           </div>
         )}
 
+        {/* Confirm modal */}
         {showConfirm && (
-          <div className="modal-overlay">
-            <div className="modal">
-              <h3>Confirm your vote</h3>
-              <p>You are voting for <strong>{selectedCandidateName}</strong>. This cannot be undone.</p>
-              <div className="modal-actions">
-                <button onClick={handleVote}>Yes, cast my vote</button>
-                <button onClick={() => setShowConfirm(false)} className="secondary">Cancel</button>
-              </div>
-            </div>
-          </div>
+          <ConfirmModal
+            title="Confirm your vote"
+            message={<>You are voting for <strong>{selectedCandidateName}</strong>. This action cannot be undone. Your vote will be recorded on the blockchain permanently.</>}
+            confirmLabel="Yes, cast my vote"
+            cancelLabel="Cancel"
+            onConfirm={handleVote}
+            onCancel={() => setShowConfirm(false)}
+            icon={Vote}
+          />
         )}
 
-        {txHash && (
-          <div className="tx-receipt">
-            <p>Vote recorded on-chain!</p>
-            <a href={`http://localhost:8545/tx/${txHash}`} target="_blank" rel="noreferrer">
-              View transaction: {txHash.slice(0, 10)}…
-            </a>
-          </div>
-        )}
-
+        {/* Success state */}
         {voteCast && (
-          <div className="vote-success">
-            <h3>✓ Vote Cast Successfully!</h3>
-            <p>Your vote has been recorded both on-chain and in the database.</p>
-            <button onClick={() => navigate('/voter-elections')}>Return to Elections</button>
+          <div className="bg-white dark:bg-surface-800 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 shadow-card p-8 text-center animate-scale-in">
+            <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/50 flex items-center justify-center mx-auto mb-5">
+              <CheckCircle2 className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-surface-900 dark:text-white mb-2">
+              Vote Cast Successfully!
+            </h2>
+            <p className="text-surface-500 dark:text-surface-400 mb-6">
+              Your vote has been recorded both on-chain and in the database.
+            </p>
+
+            {txHash && (
+              <div className="mb-6 p-4 rounded-xl bg-surface-50 dark:bg-surface-700/50 border border-surface-200 dark:border-surface-600">
+                <p className="text-xs text-surface-500 dark:text-surface-400 mb-1">Transaction Hash</p>
+                <a
+                  href={`http://localhost:8545/tx/${txHash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm font-mono text-brand-600 dark:text-brand-400 hover:underline"
+                >
+                  {txHash.slice(0, 16)}…{txHash.slice(-8)}
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
+            )}
+
+            <button
+              onClick={() => navigate('/voter-elections')}
+              className="btn-primary"
+            >
+              Return to Elections
+            </button>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </Layout>
   );
 }

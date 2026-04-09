@@ -2,12 +2,15 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
-import ElectionCountdown from '../components/ElectionCountdown';
-import './VoterElections.css';
+import Layout from '../components/Layout';
+import ElectionCard from '../components/ElectionCard';
+import EmptyState from '../components/EmptyState';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { Vote, Search } from 'lucide-react';
 
 export default function VoterElections() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [elections, setElections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
@@ -27,102 +30,94 @@ export default function VoterElections() {
     }
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
-
   const getFilteredElections = () => {
     if (filter === 'ALL') return elections;
     return elections.filter(e => e.status === filter);
   };
 
-  const handleVote = (electionId) => {
-    navigate(`/voting/${electionId}`);
+  const handleAction = (electionId) => {
+    const election = elections.find(e => e.election_id === electionId);
+    if (election?.status === 'ACTIVE') {
+      navigate(`/voting/${electionId}`);
+    } else if (election?.status === 'CLOSED') {
+      navigate(`/results/${electionId}`);
+    }
   };
 
-  const handleViewResults = (electionId) => {
-    navigate(`/results/${electionId}`);
+  const getActionLabel = (election) => {
+    if (election.status === 'ACTIVE') return 'Cast Vote';
+    if (election.status === 'CLOSED') return 'View Results';
+    return 'Coming Soon';
   };
 
-  if (loading) return <div>Loading elections...</div>;
+  const filters = [
+    { key: 'ALL', label: 'All' },
+    { key: 'UPCOMING', label: 'Upcoming' },
+    { key: 'ACTIVE', label: 'Active' },
+    { key: 'CLOSED', label: 'Closed' },
+  ];
+
+  if (loading) {
+    return (
+      <Layout>
+        <LoadingSpinner message="Loading elections..." />
+      </Layout>
+    );
+  }
 
   return (
-    <div className="container">
-      <nav className="navbar">
-        <h1>🗳️ Voting System</h1>
-        <div className="nav-actions">
-          <span>Welcome, {user?.name}</span>
-          <button onClick={handleLogout}>Logout</button>
-        </div>
-      </nav>
-
-      <main className="main-content">
-        <h2>Available Elections</h2>
-        
-        <div className="filters">
-          <button 
-            className={filter === 'ALL' ? 'active' : ''} 
-            onClick={() => setFilter('ALL')}
-          >
-            All
-          </button>
-          <button 
-            className={filter === 'UPCOMING' ? 'active' : ''} 
-            onClick={() => setFilter('UPCOMING')}
-          >
-            Upcoming
-          </button>
-          <button 
-            className={filter === 'ACTIVE' ? 'active' : ''} 
-            onClick={() => setFilter('ACTIVE')}
-          >
-            Active
-          </button>
-          <button 
-            className={filter === 'CLOSED' ? 'active' : ''} 
-            onClick={() => setFilter('CLOSED')}
-          >
-            Closed
-          </button>
+    <Layout>
+      <div className="animate-fade-in">
+        {/* Page header */}
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-surface-900 dark:text-white mb-2">
+            Elections
+          </h1>
+          <p className="text-surface-500 dark:text-surface-400">
+            Browse and participate in active elections
+          </p>
         </div>
 
-        <div className="elections-list">
-          {getFilteredElections().length === 0 ? (
-            <p>No elections found</p>
-          ) : (
-            getFilteredElections().map(election => (
-              <div key={election.election_id} className="election-card">
-                <h3>{election.title}</h3>
-                <p>Status: <span className={`status ${election.status}`}>{election.status}</span></p>
-                <p>Start: {new Date(election.start_time).toLocaleString()}</p>
-                <p>End: {new Date(election.end_time).toLocaleString()}</p>
-                {election.status === 'ACTIVE' && (
-                  <p className="countdown-info">
-                    <ElectionCountdown targetTime={election.end_time} label="Time remaining" />
-                  </p>
-                )}
-                {election.status === 'UPCOMING' && (
-                  <p className="countdown-info">
-                    <ElectionCountdown targetTime={election.start_time} label="Starts in" />
-                  </p>
-                )}
-                <div className="actions">
-                  {election.status === 'ACTIVE' && (
-                    <button onClick={() => handleVote(election.election_id)}>Cast Vote</button>
-                  )}
-                  {election.status === 'CLOSED' && (
-                    <button onClick={() => handleViewResults(election.election_id)}>View Results</button>
-                  )}
-                  {election.status === 'UPCOMING' && (
-                    <button disabled>Coming Soon</button>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
+        {/* Filter toolbar */}
+        <div className="flex flex-wrap items-center gap-2 mb-8 p-1.5 bg-surface-100 dark:bg-surface-800 rounded-2xl w-fit">
+          {filters.map(f => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                filter === f.key
+                  ? 'bg-white dark:bg-surface-700 text-surface-900 dark:text-white shadow-sm'
+                  : 'text-surface-500 dark:text-surface-400 hover:text-surface-700 dark:hover:text-surface-300'
+              }`}
+            >
+              {f.label}
+            </button>
+          ))}
         </div>
-      </main>
-    </div>
+
+        {/* Elections grid */}
+        {getFilteredElections().length === 0 ? (
+          <EmptyState
+            icon={Search}
+            title="No elections found"
+            description={filter === 'ALL'
+              ? "There are no elections available right now. Check back later!"
+              : `No ${filter.toLowerCase()} elections at the moment.`
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {getFilteredElections().map(election => (
+              <ElectionCard
+                key={election.election_id}
+                election={election}
+                onAction={election.status !== 'UPCOMING' ? handleAction : undefined}
+                actionLabel={getActionLabel(election)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </Layout>
   );
 }
