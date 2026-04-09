@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
+import ElectionCountdown from '../components/ElectionCountdown';
 import './VoterElections.css';
 
 export default function VoterElections() {
@@ -96,6 +97,16 @@ export default function VoterElections() {
                 <p>Status: <span className={`status ${election.status}`}>{election.status}</span></p>
                 <p>Start: {new Date(election.start_time).toLocaleString()}</p>
                 <p>End: {new Date(election.end_time).toLocaleString()}</p>
+                {election.status === 'ACTIVE' && (
+                  <p className="countdown-info">
+                    <ElectionCountdown targetTime={election.end_time} label="Time remaining" />
+                  </p>
+                )}
+                {election.status === 'UPCOMING' && (
+                  <p className="countdown-info">
+                    <ElectionCountdown targetTime={election.start_time} label="Starts in" />
+                  </p>
+                )}
                 <div className="actions">
                   {election.status === 'ACTIVE' && (
                     <button onClick={() => handleVote(election.election_id)}>Cast Vote</button>

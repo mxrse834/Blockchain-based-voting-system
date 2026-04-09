@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
+import ResultsChart from '../components/ResultsChart';
 import './ElectionResults.css';
 
 export default function ElectionResults() {
@@ -67,6 +68,12 @@ export default function ElectionResults() {
         {myVote && (
           <div className="my-vote-info">
             <p>✓ You voted for: <strong>{myVote.name}</strong></p>
+          </div>
+        )}
+
+        {results.length > 0 && (
+          <div className="chart-container">
+            <ResultsChart results={results.map(r => ({ name: r.name, vote_count: r.vote_count }))} />
           </div>
         )}
 

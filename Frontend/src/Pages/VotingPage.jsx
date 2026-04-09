@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ethers } from 'ethers';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
+import WalletConnect from '../components/WalletConnect';
+import ElectionCountdown from '../components/ElectionCountdown';
+import VotingABI from '../contracts/Voting.json';
 import './VotingPage.css';
 
 export default function VotingPage() {
@@ -11,8 +15,15 @@ export default function VotingPage() {
   const [election, setElection] = useState(null);
   const [candidates, setCandidates] = useState([]);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
+  const [selectedCandidateName, setSelectedCandidateName] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [provider, setProvider] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [txHash, setTxHash] = useState(null);
+  const [txPending, setTxPending] = useState(false);
+  const [voteCast, setVoteCast] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -34,20 +45,51 @@ export default function VotingPage() {
     }
   };
 
+  const handleWalletConnected = (prov, addr) => {
+    setProvider(prov);
+    setWalletAddress(addr);
+  };
+
   const handleVote = async () => {
     if (!selectedCandidate) {
       setError('Please select a candidate');
       return;
     }
 
+    if (!provider) {
+      setError('Please connect your wallet first.');
+      return;
+    }
+
+    setShowConfirm(false);
+    setTxPending(true);
     try {
+      // 1. Find the onchain index of the candidate
+      const candidateIndex = candidates.findIndex(c => c.candidate_id === selectedCandidate);
+      if (candidateIndex === -1) {
+        throw new Error('Candidate not found');
+      }
+
+      // 2. Record in backend (for off-chain query speed)
       await api.post(`/votes/${electionId}`, {
         candidateId: selectedCandidate
       });
-      alert('Vote cast successfully!');
-      navigate('/voter-elections');
+
+      // 3. Also write to blockchain
+      const signer = await provider.getSigner();
+      const contract = new ethers.Contract(
+        import.meta.env.VITE_CONTRACT_ADDRESS,
+        VotingABI.abi,
+        signer
+      );
+      const tx = await contract.castVote(candidateIndex);
+      await tx.wait();
+      setTxHash(tx.hash);
+      setVoteCast(true);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to cast vote');
+      setError(err.reason || err.message || 'Vote failed.');
+    } finally {
+      setTxPending(false);
     }
   };
 
@@ -72,40 +114,90 @@ export default function VotingPage() {
         <div className="election-info">
           <h2>{election.title}</h2>
           <p>Status: {election.status}</p>
+          {election.end_time && (
+            <ElectionCountdown targetTime={election.end_time} label="Election ends in" />
+          )}
+        </div>
+
+        <div className="wallet-section">
+          <WalletConnect onConnected={handleWalletConnected} />
         </div>
 
         {error && <div className="error-message">{error}</div>}
 
-        <div className="candidates-list">
-          <h3>Select a Candidate:</h3>
-          {candidates.length === 0 ? (
-            <p>No candidates available</p>
-          ) : (
-            candidates.map(candidate => (
-              <div 
-                key={candidate.candidate_id} 
-                className={`candidate-option ${selectedCandidate === candidate.candidate_id ? 'selected' : ''}`}
-                onClick={() => setSelectedCandidate(candidate.candidate_id)}
-              >
-                <input 
-                  type="radio" 
-                  checked={selectedCandidate === candidate.candidate_id}
-                  onChange={() => setSelectedCandidate(candidate.candidate_id)}
-                />
-                <label>{candidate.name}</label>
-              </div>
-            ))
-          )}
-        </div>
+        {!voteCast && (
+          <div className="candidates-list">
+            <h3>Select a Candidate:</h3>
+            {candidates.length === 0 ? (
+              <p>No candidates available</p>
+            ) : (
+              candidates.map(candidate => (
+                <div 
+                  key={candidate.candidate_id} 
+                  className={`candidate-option ${selectedCandidate === candidate.candidate_id ? 'selected' : ''}`}
+                  onClick={() => {
+                    setSelectedCandidate(candidate.candidate_id);
+                    setSelectedCandidateName(candidate.name);
+                  }}
+                >
+                  <input 
+                    type="radio" 
+                    checked={selectedCandidate === candidate.candidate_id}
+                    onChange={() => {
+                      setSelectedCandidate(candidate.candidate_id);
+                      setSelectedCandidateName(candidate.name);
+                    }}
+                  />
+                  <label>{candidate.name}</label>
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
-        <div className="voting-actions">
-          <button onClick={handleVote} disabled={!selectedCandidate}>
-            Cast Vote
-          </button>
-          <button onClick={() => navigate('/voter-elections')} className="secondary">
-            Back to Elections
-          </button>
-        </div>
+        {!voteCast && (
+          <div className="voting-actions">
+            <button 
+              onClick={() => setShowConfirm(true)} 
+              disabled={!selectedCandidate || !provider || txPending}
+            >
+              {txPending ? 'Processing...' : 'Cast Vote'}
+            </button>
+            <button onClick={() => navigate('/voter-elections')} className="secondary">
+              Back to Elections
+            </button>
+          </div>
+        )}
+
+        {showConfirm && (
+          <div className="modal-overlay">
+            <div className="modal">
+              <h3>Confirm your vote</h3>
+              <p>You are voting for <strong>{selectedCandidateName}</strong>. This cannot be undone.</p>
+              <div className="modal-actions">
+                <button onClick={handleVote}>Yes, cast my vote</button>
+                <button onClick={() => setShowConfirm(false)} className="secondary">Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {txHash && (
+          <div className="tx-receipt">
+            <p>Vote recorded on-chain!</p>
+            <a href={`http://localhost:8545/tx/${txHash}`} target="_blank" rel="noreferrer">
+              View transaction: {txHash.slice(0, 10)}…
+            </a>
+          </div>
+        )}
+
+        {voteCast && (
+          <div className="vote-success">
+            <h3>✓ Vote Cast Successfully!</h3>
+            <p>Your vote has been recorded both on-chain and in the database.</p>
+            <button onClick={() => navigate('/voter-elections')}>Return to Elections</button>
+          </div>
+        )}
       </main>
     </div>
   );

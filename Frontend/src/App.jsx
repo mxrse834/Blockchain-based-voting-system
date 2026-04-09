@@ -9,6 +9,7 @@ import ElectionResults from "./Pages/ElectionResults";
 import AdminElections from "./Pages/AdminElections";
 import CreateElection from "./Pages/CreateElection";
 import AdminElectionDetail from "./Pages/AdminElectionDetail";
+import NotFound from "./Pages/NotFound";
 
 function PrivateRoute({ children, requiredRole }) {
   const { user, loading } = useAuth();
@@ -87,7 +88,7 @@ function AppRoutes() {
       />
 
       {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
