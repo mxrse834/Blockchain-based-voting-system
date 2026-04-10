@@ -226,6 +226,7 @@ const updateElection = asyncHandler(async (req, res) => {
 const addCandidateToElection = asyncHandler(async (req, res) => {
   const { electionId } = req.params;
   const { name } = req.body;
+  const photo = req.file; // This is extracted by Multer from the "photo" field
 
   const trimmedName = name?.trim();
 
@@ -239,6 +240,14 @@ const addCandidateToElection = asyncHandler(async (req, res) => {
 
   if (!trimmedName) {
     throw new ApiError(400, "Candidate name is required");
+  }
+
+  // Demonstrate properly extracting the image file
+  console.log(`[Candidate Upload] Name extracted from form data: ${trimmedName}`);
+  if (photo) {
+    console.log(`[Candidate Upload] Photo received: ${photo.originalname} (${photo.size} bytes)`);
+    // Example: A robust app would upload 'photo.buffer' to Cloudinary or AWS S3 here
+    // const uploadResult = await cloudinary.uploader.upload_stream(photo.buffer);
   }
 
   const [election] = await db.query(
@@ -260,21 +269,26 @@ const addCandidateToElection = asyncHandler(async (req, res) => {
   }
 
   const candidateId = uuidv4();
+  
+  // Ensure real photo URL is captured from Multer diskStorage
+  const photoUrl = photo ? `http://localhost:5000/uploads/${photo.filename}` : null;
 
   await db.query(
-    `INSERT INTO candidates (candidate_id, election_id, name)
-     VALUES (?, ?, ?)`,
-    [candidateId, electionId, trimmedName]
+    `INSERT INTO candidates (candidate_id, election_id, name, avatar_url)
+     VALUES (?, ?, ?, ?)`,
+    [candidateId, electionId, trimmedName, photoUrl]
   );
 
   const [candidate] = await db.query(
-    `SELECT candidate_id, name, election_id
+    `SELECT candidate_id, name, election_id, avatar_url
      FROM candidates WHERE candidate_id = ?`,
     [candidateId]
   );
+  
+  const createdCandidate = candidate[0];
 
   return res.status(201).json(
-    new ApiResponse(201, candidate[0], "Candidate added successfully")
+    new ApiResponse(201, createdCandidate, "Candidate added successfully with multipart data")
   );
 });
 
@@ -284,7 +298,7 @@ const getCandidates = asyncHandler(async (req, res) => {
   const [election] = await db.query("SELECT election_id FROM elections WHERE election_id = ?", [electionId]);
   if (election.length === 0) throw new ApiError(404, "Election does not exist");
   const [candidates] = await db.query(
-    "SELECT candidate_id, name, election_id FROM candidates WHERE election_id = ? ORDER BY name",
+    "SELECT candidate_id, name, election_id, avatar_url FROM candidates WHERE election_id = ? ORDER BY name",
     [electionId]
   );
   return res.status(200).json(new ApiResponse(200, candidates, "Candidates fetched successfully"));

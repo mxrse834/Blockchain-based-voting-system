@@ -4,8 +4,13 @@ import "./src/db/connection.js"; // DB init
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 import blockchain from "./src/utils/blockchain.service.js";
 import { errorHandler } from "./src/middlewares/error.middleware.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ✅ import routes
 import authRoutes from "./src/routes/auth.routes.js";
@@ -13,6 +18,9 @@ import electionRoutes from "./src/routes/election.routes.js";
 import votingRoutes from "./src/routes/vote.routes.js";
 
 const app = express();
+
+// Serve static files from public/uploads
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 // Middleware
 app.use(cors({
