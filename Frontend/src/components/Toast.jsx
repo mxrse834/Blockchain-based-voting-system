@@ -12,14 +12,14 @@ const styles = {
   success: 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300',
   error: 'bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800 text-red-800 dark:text-red-300',
   warning: 'bg-amber-50 dark:bg-amber-950/50 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300',
-  info: 'bg-brand-50 dark:bg-brand-950/50 border-brand-200 dark:border-brand-800 text-brand-800 dark:text-brand-300',
+  info: 'bg-indigo-50 dark:bg-indigo-950/50 border-indigo-200 dark:border-indigo-800 text-indigo-800 dark:text-indigo-300',
 };
 
 const iconStyles = {
   success: 'text-emerald-600 dark:text-emerald-400',
   error: 'text-red-600 dark:text-red-400',
   warning: 'text-amber-600 dark:text-amber-400',
-  info: 'text-brand-600 dark:text-brand-400',
+  info: 'text-indigo-600 dark:text-indigo-400',
 };
 
 export default function Toast({ type = 'info', message, dismissible = true, onDismiss, duration = 0 }) {

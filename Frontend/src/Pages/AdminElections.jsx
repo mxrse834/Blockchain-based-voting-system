@@ -45,20 +45,20 @@ export default function AdminElections() {
 
   return (
     <Layout>
-      <div className="animate-fade-in">
+      <div className="animate-fade-in w-full max-w-7xl mx-auto">
         {/* Page header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-surface-900 dark:text-white mb-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-indigo-950 dark:text-slate-100 mb-2">
               Elections Management
             </h1>
-            <p className="text-surface-500 dark:text-surface-400">
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
               {elections.length} election{elections.length !== 1 ? 's' : ''} in total
             </p>
           </div>
           <button
             onClick={() => navigate('/create-election')}
-            className="btn-primary self-start sm:self-auto"
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-md transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 shadow-sm"
           >
             <Plus className="w-5 h-5" />
             Create Election
@@ -74,58 +74,76 @@ export default function AdminElections() {
             actionLabel="Create Election"
           />
         ) : (
-          <div className="bg-white dark:bg-surface-800 rounded-2xl border border-surface-200 dark:border-surface-700/60 shadow-card overflow-hidden">
-            {/* Table header */}
-            <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-4 px-6 py-4 border-b border-surface-100 dark:border-surface-700/60 bg-surface-50 dark:bg-surface-800/80">
-              <span className="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider">Title</span>
-              <span className="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider">Status</span>
-              <span className="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider">Start</span>
-              <span className="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider">End</span>
-              <span className="text-xs font-semibold text-surface-500 dark:text-surface-400 uppercase tracking-wider">Actions</span>
-            </div>
-
-            {/* Rows */}
-            <div className="divide-y divide-surface-100 dark:divide-surface-700/60">
-              {elections.map(election => (
-                <div
-                  key={election.election_id}
-                  className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-3 md:gap-4 px-6 py-5 hover:bg-surface-50 dark:hover:bg-surface-700/20 transition-colors duration-200"
-                >
-                  <div className="flex items-center">
-                    <span className="font-semibold text-surface-900 dark:text-white">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {elections.map(election => (
+              <div
+                key={election.election_id}
+                className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md dark:shadow-none transition-all duration-200 group flex flex-col"
+              >
+                {/* Card Header */}
+                <div className="p-6 border-b border-slate-100 dark:border-slate-800/60">
+                  <div className="flex justify-between items-start mb-4">
+                    <h2 className="text-lg font-bold text-indigo-950 dark:text-slate-100 line-clamp-1 pr-4">
                       {election.title}
-                    </span>
+                    </h2>
+                    {/* Muted Pill Badge (Status) in Top Right */}
+                    <div className="flex-shrink-0">
+                      <StatusBadge status={election.status} />
+                    </div>
                   </div>
-                  <div className="flex items-center">
-                    <StatusBadge status={election.status} />
+                  
+                  {/* Start / End Dates List */}
+                  <div className="space-y-2 mt-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-md bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
+                        <Calendar className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Starts</p>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {new Date(election.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-md bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400">
+                        <Clock className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">Ends</p>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          {new Date(election.end_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5 text-sm text-surface-500 dark:text-surface-400">
-                    <Calendar className="w-3.5 h-3.5 flex-shrink-0" />
-                    {new Date(election.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-sm text-surface-500 dark:text-surface-400">
-                    <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                    {new Date(election.end_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </div>
+                </div>
+
+                {/* Card Footer (Actions) */}
+                <div className="p-4 bg-slate-50 dark:bg-slate-950/50 rounded-b-xl flex items-center justify-between mt-auto">
+                  <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 font-mono tracking-wide">
+                    ID: {election.election_id.substring(0,8)}...
+                  </span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => navigate(`/admin-election-detail/${election.election_id}`)}
-                      className="p-2 rounded-lg text-brand-600 dark:text-brand-400 hover:bg-brand-50 dark:hover:bg-brand-950/30 transition-colors"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                       title="Manage"
                     >
-                      <Settings className="w-4 h-4" />
+                      <Settings className="w-3.5 h-3.5" />
+                      Manage
                     </button>
                     <button
                       onClick={() => setDeleteTarget(election.election_id)}
-                      className="p-2 rounded-lg text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                      className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                       title="Delete"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

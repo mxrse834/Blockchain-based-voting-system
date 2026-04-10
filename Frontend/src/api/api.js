@@ -46,7 +46,7 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Refresh failed, clear storage and redirect to login
         localStorage.clear();
-        window.location.href = '/login';
+        window.location.href = '/';
         return Promise.reject(refreshError);
       }
     }

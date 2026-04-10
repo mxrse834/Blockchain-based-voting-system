@@ -19,33 +19,33 @@ export default function ConfirmModal({
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-white dark:bg-surface-800 rounded-2xl shadow-premium p-6 animate-scale-in">
+      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 p-6 animate-scale-in">
         {/* Close button */}
         <button
           onClick={onCancel}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-surface-400 hover:text-surface-600 dark:hover:text-surface-300 hover:bg-surface-100 dark:hover:bg-surface-700 transition-colors"
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Icon */}
-        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${
+        <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-6 shadow-sm border ${
           danger
-            ? 'bg-red-100 dark:bg-red-950/50'
-            : 'bg-brand-100 dark:bg-brand-950/50'
+            ? 'bg-red-50 dark:bg-red-900/30 border-red-100 dark:border-red-800'
+            : 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800'
         }`}>
           <Icon className={`w-6 h-6 ${
             danger
               ? 'text-red-600 dark:text-red-400'
-              : 'text-brand-600 dark:text-brand-400'
+              : 'text-indigo-600 dark:text-indigo-400'
           }`} />
         </div>
 
         {/* Content */}
-        <h3 className="text-lg font-semibold text-surface-900 dark:text-white mb-2">
+        <h3 className="text-xl font-extrabold tracking-tight text-indigo-950 dark:text-slate-100 mb-2">
           {title}
         </h3>
-        <p className="text-sm text-surface-600 dark:text-surface-400 mb-6">
+        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
           {message}
         </p>
 

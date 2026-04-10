@@ -8,14 +8,14 @@ export default function EmptyState({
   actionLabel,
 }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 animate-fade-in">
-      <div className="w-20 h-20 rounded-2xl bg-surface-100 dark:bg-surface-800 flex items-center justify-center mb-6">
-        <Icon className="w-10 h-10 text-surface-400 dark:text-surface-500" />
+    <div className="flex flex-col items-center justify-center py-16 px-6 animate-fade-in border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-sm mt-4">
+      <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-slate-800/50 flex items-center justify-center mb-4">
+        <Icon className="w-8 h-8 text-slate-400 dark:text-slate-500" />
       </div>
-      <h3 className="text-lg font-semibold text-surface-900 dark:text-white mb-2">
+      <h3 className="text-base font-bold text-slate-700 dark:text-slate-300 mb-2">
         {title}
       </h3>
-      <p className="text-sm text-surface-500 dark:text-surface-400 text-center max-w-sm mb-6">
+      <p className="text-sm font-medium text-slate-500 dark:text-slate-400 text-center max-w-sm mb-6">
         {description}
       </p>
       {action && (

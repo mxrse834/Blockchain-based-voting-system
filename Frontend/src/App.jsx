@@ -19,7 +19,7 @@ function PrivateRoute({ children, requiredRole }) {
   if (loading) return <LoadingSpinner fullScreen message="Authenticating..." />;
   
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   if (requiredRole && user.role !== requiredRole) {

@@ -7,8 +7,9 @@
     "deploy": "npx hardhat run scripts/deploy.js --network localhost"
   },
   "devDependencies": {
-    "hardhat": "^2.22.0",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "ethers": "^6.16.0"
+    "@tailwindcss/forms": "^0.5.11",
+    "ethers": "^6.16.0",
+    "hardhat": "^2.22.0"
   }
 }
