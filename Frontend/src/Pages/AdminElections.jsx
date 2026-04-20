@@ -7,7 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmModal from '../components/ConfirmModal';
 import EmptyState from '../components/EmptyState';
-import { Plus, Settings, Trash2, Calendar, Clock, Vote, Search } from 'lucide-react';
+import { Plus, Settings, Trash2, Calendar, Clock, Vote, Search, LayoutDashboard, Activity, Users } from 'lucide-react';
 
 export default function AdminElections() {
   const navigate = useNavigate();
@@ -70,8 +70,48 @@ export default function AdminElections() {
           </button>
         </div>
 
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          {/* Total Elections */}
+          <div className="bg-white/80 dark:bg-[#1A1F36]/50 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-[0_0_20px_rgba(139,92,246,0.15)] ring-1 ring-purple-500/20 backdrop-blur-md flex items-center justify-between transition-all">
+            <div>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Total Elections</p>
+              <p className="text-3xl font-extrabold text-indigo-950 dark:text-slate-100">{elections.length}</p>
+            </div>
+            <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-500/10 flex items-center justify-center border border-indigo-100 dark:border-indigo-500/20">
+              <LayoutDashboard className="w-6 h-6 text-indigo-600 dark:text-indigo-400 drop-shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
+            </div>
+          </div>
+
+          {/* Active Now */}
+          <div className="bg-white/80 dark:bg-[#1A1F36]/50 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-[0_0_20px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/20 backdrop-blur-md flex items-center justify-between transition-all">
+            <div>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Active Now</p>
+              <p className="text-3xl font-extrabold text-emerald-600 dark:text-emerald-400">
+                {elections.filter(e => e.status === 'ACTIVE').length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center border border-emerald-100 dark:border-emerald-500/20">
+              <Activity className="w-6 h-6 text-emerald-500 dark:text-emerald-400 drop-shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+            </div>
+          </div>
+
+          {/* Completed Elections */}
+          <div className="bg-white/80 dark:bg-[#1A1F36]/50 border border-slate-200 dark:border-slate-800 p-5 rounded-xl shadow-[0_0_20px_rgba(249,115,22,0.15)] ring-1 ring-orange-500/20 backdrop-blur-md flex items-center justify-between transition-all">
+            <div>
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">Completed Elections</p>
+              <p className="text-3xl font-extrabold text-orange-500 dark:text-orange-400">
+                {elections.filter(e => e.status === 'CLOSED').length}
+              </p>
+            </div>
+            <div className="w-12 h-12 rounded-full bg-orange-50 dark:bg-orange-500/10 flex items-center justify-center border border-orange-100 dark:border-orange-500/20">
+              <Vote className="w-6 h-6 text-orange-500 dark:text-orange-400 drop-shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
+            </div>
+          </div>
+        </div>
+
         {elections.length > 0 && (
-          <div className="relative w-full max-w-md mb-8">
+          <div className="relative w-full max-w-md mb-12">
             <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
             <input
               type="text"
