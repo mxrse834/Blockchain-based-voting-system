@@ -1,12 +1,32 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import { CheckCircle, Sun, Moon, Hexagon, ArrowRight, Settings, Calendar, Star } from "lucide-react";
+import { Sparkles, ShieldCheck, Sun, Moon, Hexagon, ArrowRight, Settings, Calendar, Star } from "lucide-react";
 
 export default function Home() {
   const navigate = useNavigate();
   const { user, loading } = useAuth();
   const { theme, toggleTheme } = useTheme();
+
+  const fullText1 = "An online voting system ";
+  const fullText2 = "you can trust";
+  const [typed1, setTyped1] = useState("");
+  const [typed2, setTyped2] = useState("");
+
+  useEffect(() => {
+    let timeout;
+    if (typed1.length < fullText1.length) {
+      timeout = setTimeout(() => {
+        setTyped1(fullText1.slice(0, typed1.length + 1));
+      }, 60);
+    } else if (typed2.length < fullText2.length) {
+      timeout = setTimeout(() => {
+        setTyped2(fullText2.slice(0, typed2.length + 1));
+      }, 60);
+    }
+    return () => clearTimeout(timeout);
+  }, [typed1, typed2]);
 
   if (loading) return null;
 
@@ -83,9 +103,40 @@ export default function Home() {
             
             {/* Left Column (Copy) */}
             <div className="max-w-2xl">
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6 leading-tight">
-                An online voting system <br className="hidden sm:block" />
-                <span className="text-orange-500">you can trust</span>
+              <style>{`
+                @keyframes cursor-blink {
+                  0%, 100% { opacity: 1; }
+                  50% { opacity: 0; }
+                }
+                .animate-cursor-blink {
+                  animation: cursor-blink 1s step-end infinite;
+                }
+                @keyframes float-tilt {
+                  0%, 100% { transform: rotate(-17deg); }
+                  50% { transform: rotate(-7deg); }
+                }
+                .animate-float-tilt {
+                  animation: float-tilt 5s ease-in-out infinite;
+                }
+              `}</style>
+              <h1 className="relative text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+                {/* Invisible placeholder to prevent layout shift */}
+                <span className="opacity-0 pointer-events-none select-none block" aria-hidden="true">
+                  An online voting system <br className="hidden sm:block" />
+                  <span className="text-orange-500">you can trust</span>|
+                </span>
+                
+                {/* Visible typing text */}
+                <span className="absolute top-0 left-0 w-full text-left">
+                  {typed1}
+                  {typed1.length === fullText1.length && <br className="hidden sm:block" />}
+                  <span className="text-orange-500">{typed2}</span>
+                  {typed1.length < fullText1.length ? (
+                    <span className="animate-cursor-blink font-light text-white">|</span>
+                  ) : (
+                    <span className="animate-cursor-blink font-light text-orange-500">|</span>
+                  )}
+                </span>
               </h1>
               <p className="text-lg sm:text-xl text-indigo-100 dark:text-slate-400 mb-8 max-w-xl">
                 Run secure, transparent, and flawless elections with our blockchain-backed voting infrastructure. Designed for organizations that demand absolute integrity.
@@ -109,11 +160,13 @@ export default function Home() {
               {/* Trust Badges */}
               <div className="flex flex-col sm:flex-row gap-6">
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  {/* Premium sleek options: use "text-orange-500" for an active accent, or "text-slate-400" for a muted silver/gray style */}
+                  <Sparkles className="w-5 h-5 text-orange-500" strokeWidth={1.5} />
                   <span className="text-sm font-medium text-indigo-100 dark:text-slate-400">Easy-to-use</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  {/* Premium sleek options: use "text-orange-500" for an active accent, or "text-slate-400" for a muted silver/gray style */}
+                  <ShieldCheck className="w-5 h-5 text-orange-500" strokeWidth={1.5} />
                   <span className="text-sm font-medium text-indigo-100 dark:text-slate-400">Secure and anonymous voting</span>
                 </div>
               </div>
@@ -121,7 +174,7 @@ export default function Home() {
 
             {/* Right Column (Visual) */}
             <div className="relative lg:ml-auto">
-              <div className="relative w-full max-w-md mx-auto transform -rotate-12 hover:-rotate-6 transition-transform duration-500 ease-out">
+              <div className="relative w-full max-w-md mx-auto animate-float-tilt hover:-rotate-6 transition-transform duration-500 ease-out">
                 {/* Glow effect for dark mode */}
                 <div className="hidden dark:block absolute inset-0 bg-orange-500/20 blur-3xl rounded-full" />
                 
