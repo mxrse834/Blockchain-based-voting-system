@@ -84,7 +84,7 @@ export default function Home() {
                   </div>
                   
                   {/* Icon Core */}
-                  <ShieldCheck className="w-5 h-5 text-orange-500 z-10" strokeWidth={1.5} />
+                  <ShieldCheck className="w-5 h-5 text-orange-500 z-10 animate-pulse" strokeWidth={1.5} />
                   
                   {/* Orbiting Dots */}
                   <div className="absolute w-8 h-8 flex items-center justify-center pointer-events-none animate-[spin_6s_linear_infinite]">
@@ -277,8 +277,8 @@ export default function Home() {
       </section>
 
       {/* 4. "How does it work?" Section */}
-      <section id="how-it-works" className="py-24 bg-slate-50 dark:bg-slate-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="how-it-works" className="py-24 bg-slate-50 dark:bg-slate-950 scroll-mt-20 min-h-[calc(100vh-5rem)] flex flex-col justify-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="text-center max-w-3xl mx-auto mb-20">
             <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-indigo-950 dark:text-slate-100 mb-6">
               How does it work?
@@ -363,8 +363,8 @@ export default function Home() {
       </section>
 
       {/* 6. Split Feature Block */}
-      <section id="managed-services-section" className="py-24 bg-slate-50 dark:bg-slate-950">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="managed-services-section" className="py-24 bg-slate-50 dark:bg-slate-950 scroll-mt-20 min-h-[calc(100vh-5rem)] flex flex-col justify-center border-b border-slate-200 dark:border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             
             {/* Left Column (Copy) */}
