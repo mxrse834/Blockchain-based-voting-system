@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { Sparkles, ShieldCheck, Sun, Moon, Hexagon, ArrowRight, Settings, Calendar, Star } from "lucide-react";
+import SecurityVisualization from "../components/SecurityVisualization";
+import SmartBallotPreview from "../components/SmartBallotPreview";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -13,6 +15,14 @@ export default function Home() {
   const fullText2 = "you can trust";
   const [typed1, setTyped1] = useState("");
   const [typed2, setTyped2] = useState("");
+  const [activeTab, setActiveTab] = useState("Plurality (First-Past-the-Post)");
+
+  const votingTabs = [
+    { id: "Plurality (First-Past-the-Post)", label: "Plurality (First-Past-the-Post)", status: "Active" },
+    { id: "Ranked-Choice", label: "Ranked-Choice", status: "Coming Soon" },
+    { id: "Cumulative Voting", label: "Cumulative Voting", status: "Coming Soon" },
+    { id: "Secure Proxy Mapping", label: "Secure Proxy Mapping", status: "Roadmap" }
+  ];
 
   useEffect(() => {
     let timeout;
@@ -39,7 +49,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-200 font-sans">
+    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-200 font-sans overflow-x-hidden">
       
       {/* 1. Global Navigation Bar */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-slate-950/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
@@ -303,28 +313,28 @@ export default function Home() {
           </h2>
           
           <div className="flex flex-wrap justify-center gap-2 mb-12">
-            {/* Active Tab */}
-            <button className="px-6 py-3 bg-slate-100 dark:bg-slate-800 rounded-full text-orange-500 font-semibold text-sm transition-colors">
-              Plurality (First-Past-the-Post)
-            </button>
-            {/* Inactive Tabs */}
-            <button className="px-6 py-3 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium text-sm transition-colors">
-              Ranked-Choice
-            </button>
-            <button className="px-6 py-3 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium text-sm transition-colors">
-              Cumulative Voting
-            </button>
-            <button className="px-6 py-3 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium text-sm transition-colors">
-              Secure Proxy Mapping
-            </button>
+            {votingTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`relative px-6 py-3 rounded-full font-semibold text-sm transition-all duration-200 group flex items-center gap-2 ${
+                  activeTab === tab.id
+                    ? "bg-slate-100 dark:bg-slate-800 text-orange-500 shadow-sm"
+                    : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 font-medium"
+                }`}
+              >
+                {tab.label}
+                {tab.status !== "Active" && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">
+                    {tab.status}
+                  </span>
+                )}
+              </button>
+            ))}
           </div>
 
           <div className="bg-slate-50 dark:bg-slate-950/50 rounded-2xl p-8 md:p-16 border border-slate-100 dark:border-slate-800 max-w-4xl mx-auto flex items-center justify-center min-h-[300px]">
-            {/* Placeholder for tab content */}
-            <div className="text-slate-500 dark:text-slate-400">
-              <Calendar className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>Configure single-winner or multi-winner plurality elections tailored for your exact bylaws.</p>
-            </div>
+            <SmartBallotPreview activeTab={activeTab} />
           </div>
         </div>
       </section>
@@ -357,16 +367,8 @@ export default function Home() {
               <div className="absolute top-8 -right-4 bottom-8 -left-4 bg-emerald-400 dark:bg-emerald-600/30 rounded-2xl transform rotate-3"></div>
               
               {/* Image Placeholder Container */}
-              <div className="relative bg-slate-200 dark:bg-slate-800 rounded-2xl aspect-[4/3] overflow-hidden shadow-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center">
-                {/* Abstract visualization or photo placeholder */}
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 mix-blend-multiply flex items-center justify-center">
-                  <span className="text-slate-400 dark:text-slate-600 font-medium">Managed Services</span>
-                </div>
-              </div>
-
-              {/* Floating Purple Icon Box */}
-              <div className="absolute -bottom-6 -left-6 bg-indigo-600 shadow-xl rounded-xl p-5 flex items-center justify-center animate-bounce duration-1000" style={{ animationDuration: '3s' }}>
-                <Settings className="w-8 h-8 text-white" />
+              <div className="relative bg-slate-200 dark:bg-slate-800 rounded-2xl aspect-[4/3] shadow-xl border border-slate-300 dark:border-slate-700 flex items-center justify-center">
+                <SecurityVisualization />
               </div>
             </div>
           </div>
