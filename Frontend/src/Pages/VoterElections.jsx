@@ -6,6 +6,7 @@ import Layout from '../components/Layout';
 import ElectionCard from '../components/ElectionCard';
 import EmptyState from '../components/EmptyState';
 import LoadingSpinner from '../components/LoadingSpinner';
+import SkeletonCard from '../components/SkeletonCard';
 import { Vote, Search, LayoutDashboard, Activity, Users } from 'lucide-react';
 
 export default function VoterElections() {
@@ -63,14 +64,6 @@ export default function VoterElections() {
     { key: 'ACTIVE', label: 'Active' },
     { key: 'CLOSED', label: 'Closed' },
   ];
-
-  if (loading) {
-    return (
-      <Layout>
-        <LoadingSpinner message="Loading elections..." />
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
@@ -159,7 +152,11 @@ export default function VoterElections() {
         )}
 
         {/* Elections grid */}
-        {elections.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : elections.length === 0 ? (
           <EmptyState
             icon={Vote}
             title="No elections available"

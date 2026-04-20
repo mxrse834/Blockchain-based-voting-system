@@ -7,6 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmModal from '../components/ConfirmModal';
 import EmptyState from '../components/EmptyState';
+import SkeletonCard from '../components/SkeletonCard';
 import { Plus, Settings, Trash2, Calendar, Clock, Vote, Search, LayoutDashboard, Activity, Users } from 'lucide-react';
 
 export default function AdminElections() {
@@ -45,8 +46,6 @@ export default function AdminElections() {
   const filteredElections = elections.filter(election => 
     election.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  if (loading) return <Layout><LoadingSpinner message="Loading elections..." /></Layout>;
 
   return (
     <Layout>
@@ -123,7 +122,11 @@ export default function AdminElections() {
           </div>
         )}
 
-        {elections.length === 0 ? (
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
+          </div>
+        ) : elections.length === 0 ? (
           <EmptyState
             icon={Vote}
             title="No elections yet"
