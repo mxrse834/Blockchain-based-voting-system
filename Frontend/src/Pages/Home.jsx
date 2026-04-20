@@ -180,13 +180,13 @@ export default function Home() {
                   onClick={() => navigate('/login')}
                   className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 px-8 rounded-md transition-all active:scale-95 shadow-lg text-center"
                 >
-                  Try for free
+                  Launch Election
                 </button>
                 <button 
                   onClick={() => navigate('/login')}
                   className="bg-transparent hover:bg-white/5 border-2 border-white/20 dark:border-slate-800 text-white font-semibold py-3 px-8 rounded-md transition-all active:scale-95 text-center"
                 >
-                  Contact sales
+                  Explore Ledger
                 </button>
               </div>
 
