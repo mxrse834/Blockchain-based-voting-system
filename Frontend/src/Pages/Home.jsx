@@ -70,7 +70,30 @@ export default function Home() {
             <div className="hidden md:flex items-center gap-8">
               <a href="#features" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-500 transition-colors">Features</a>
               <a href="#how-it-works" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-500 transition-colors">How it works</a>
-              <a href="#pricing" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-500 transition-colors">Pricing</a>
+              
+              {/* Managed Services Link */}
+              <div className="relative group text-sm font-medium text-slate-600 dark:text-slate-400">
+                <button 
+                  onClick={() => document.getElementById('managed-services-section')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 dark:focus:ring-offset-slate-950"
+                  aria-label="Managed Services"
+                >
+                  {/* Tooltip */}
+                  <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold px-2 py-1 rounded shadow-lg whitespace-nowrap pointer-events-none z-50 before:content-[''] before:absolute before:top-[-4px] before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-b-slate-900 dark:before:border-b-white">
+                    Managed Services
+                  </div>
+                  
+                  {/* Icon Core */}
+                  <ShieldCheck className="w-5 h-5 text-orange-500 z-10" strokeWidth={1.5} />
+                  
+                  {/* Orbiting Dots */}
+                  <div className="absolute w-8 h-8 flex items-center justify-center pointer-events-none animate-[spin_6s_linear_infinite]">
+                    <div className="w-[3px] h-[3px] bg-indigo-500 rounded-full absolute -top-1 shadow-[0_0_6px_rgba(99,102,241,0.8)]" />
+                    <div className="w-[3px] h-[3px] bg-emerald-500 rounded-full absolute -right-1 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
+                    <div className="w-[2px] h-[2px] bg-orange-400 rounded-full absolute bottom-0 left-0 shadow-[0_0_4px_rgba(251,146,60,0.8)]" />
+                  </div>
+                </button>
+              </div>
             </div>
 
             {/* Right Actions */}
@@ -340,7 +363,7 @@ export default function Home() {
       </section>
 
       {/* 6. Split Feature Block */}
-      <section className="py-24 bg-slate-50 dark:bg-slate-950">
+      <section id="managed-services-section" className="py-24 bg-slate-50 dark:bg-slate-950">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             
