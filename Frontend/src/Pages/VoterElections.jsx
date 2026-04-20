@@ -14,6 +14,7 @@ export default function VoterElections() {
   const [elections, setElections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     fetchElections();
@@ -31,8 +32,14 @@ export default function VoterElections() {
   };
 
   const getFilteredElections = () => {
-    if (filter === 'ALL') return elections;
-    return elections.filter(e => e.status === filter);
+    let filtered = elections;
+    if (filter !== 'ALL') {
+      filtered = filtered.filter(e => e.status === filter);
+    }
+    if (searchQuery.trim()) {
+      filtered = filtered.filter(e => e.title.toLowerCase().includes(searchQuery.toLowerCase()));
+    }
+    return filtered;
   };
 
   const handleAction = (electionId) => {
@@ -97,14 +104,35 @@ export default function VoterElections() {
           </div>
         </div>
 
+        {/* Search Bar - only show if there are any elections available */}
+        {elections.length > 0 && (
+          <div className="relative w-full max-w-md mb-8">
+            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search elections by name..."
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 pl-10 pr-4 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm"
+            />
+          </div>
+        )}
+
         {/* Elections grid */}
-        {getFilteredElections().length === 0 ? (
+        {elections.length === 0 ? (
+          <EmptyState
+            icon={Vote}
+            title="No elections available"
+            description="There are no elections available right now. Check back later!"
+          />
+        ) : getFilteredElections().length === 0 ? (
           <EmptyState
             icon={Search}
-            title="No elections found"
-            description={filter === 'ALL'
-              ? "There are no elections available right now. Check back later!"
-              : `No ${filter.toLowerCase()} elections at the moment.`
+            title={searchQuery.trim() ? `No elections found matching "${searchQuery}"` : "No elections found"}
+            description={
+              searchQuery.trim() 
+                ? "Try adjusting your search query or clear the selected tab filter."
+                : `No ${filter.toLowerCase()} elections at the moment.`
             }
           />
         ) : (

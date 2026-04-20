@@ -7,7 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
 import ConfirmModal from '../components/ConfirmModal';
 import EmptyState from '../components/EmptyState';
-import { Plus, Settings, Trash2, Calendar, Clock, Vote } from 'lucide-react';
+import { Plus, Settings, Trash2, Calendar, Clock, Vote, Search } from 'lucide-react';
 
 export default function AdminElections() {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ export default function AdminElections() {
   const [elections, setElections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => { fetchElections(); }, []);
 
@@ -41,6 +42,10 @@ export default function AdminElections() {
     }
   };
 
+  const filteredElections = elections.filter(election => 
+    election.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   if (loading) return <Layout><LoadingSpinner message="Loading elections..." /></Layout>;
 
   return (
@@ -65,6 +70,19 @@ export default function AdminElections() {
           </button>
         </div>
 
+        {elections.length > 0 && (
+          <div className="relative w-full max-w-md mb-8">
+            <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search elections by name..."
+              className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg py-2.5 pl-10 pr-4 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm"
+            />
+          </div>
+        )}
+
         {elections.length === 0 ? (
           <EmptyState
             icon={Vote}
@@ -73,9 +91,15 @@ export default function AdminElections() {
             action={() => navigate('/create-election')}
             actionLabel="Create Election"
           />
+        ) : filteredElections.length === 0 ? (
+          <EmptyState
+            icon={Search}
+            title={`No elections found matching "${searchQuery}"`}
+            description="Try adjusting your search query to find what you're looking for."
+          />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {elections.map(election => (
+            {filteredElections.map(election => (
               <div
                 key={election.election_id}
                 className="relative bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:shadow-md dark:shadow-none transition-all duration-200 group flex flex-col"
