@@ -79,16 +79,19 @@ export default function VotingPage() {
       
       setTxStep(2); // Broadcasting / Transacting
       
-      // Record vote in DB with the blockchain tx hash
+      // WAIT FOR BLOCKCHAIN CONFIRMATION FIRST
+      const receipt = await tx.wait();
+      
+      // ONLY AFTER SUCCESSFUL BLOCKCHAIN TX, RECORD IN DB
       await api.post(`/votes/${electionId}`, {
         candidateId: selectedCandidate,
-        txHash: tx.hash
+        txHash: receipt.hash,
+        walletAddress: walletAddress
       });
       
       setTxStep(3); // Confirming
       
-      await tx.wait();
-      setTxHash(tx.hash);
+      setTxHash(receipt.hash);
       setVoteCast(true);
     } catch (err) {
       if (err.response?.status === 409) {

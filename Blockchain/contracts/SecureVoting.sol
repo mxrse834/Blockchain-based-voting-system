@@ -6,7 +6,7 @@ contract SecureVoting {
     bool public electionActive;
 
     string[] public candidates;
-    mapping(address => bool) public hasVoted;
+    mapping(uint256 => mapping(address => bool)) public hasVoted;
     mapping(uint => uint) public votes; // candidateId => vote count
 
     constructor(string[] memory _candidates) {
@@ -28,12 +28,12 @@ contract SecureVoting {
         electionActive = false;
     }
 
-    function vote(uint candidateId) external {
+    function vote(uint256 electionId, uint candidateId) external {
         require(electionActive, "Election not active");
-        require(!hasVoted[msg.sender], "Already voted");
+        require(!hasVoted[electionId][msg.sender], "Wallet has already voted in this election");
         require(candidateId < candidates.length, "Invalid candidate");
 
-        hasVoted[msg.sender] = true;
+        hasVoted[electionId][msg.sender] = true;
         votes[candidateId]++;
     }
 

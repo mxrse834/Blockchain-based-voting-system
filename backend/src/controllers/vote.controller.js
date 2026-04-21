@@ -7,16 +7,23 @@ import blockchain from "../utils/blockchain.service.js";
 
 const castVote = asyncHandler(async (req, res) => {
   const { electionId } = req.params;
-  const { candidateId, txHash } = req.body;
+  const { candidateId, txHash, walletAddress } = req.body;
   const userId = req.user?.user_id;
 
   if (!userId) throw new ApiError(401, "Unauthorized");
   if (!isUuid(electionId)) throw new ApiError(400, "Invalid election id");
   if (!isUuid(candidateId)) throw new ApiError(400, "Invalid candidate id");
+  if (!walletAddress) throw new ApiError(400, "Wallet address is required");
 
   // Validate txHash format if provided (0x + 64 hex chars)
   if (txHash && !/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
     throw new ApiError(400, "Invalid transaction hash format");
+  }
+
+  // Check if wallet address matches user's linked wallet
+  const [userDb] = await db.query("SELECT wallet_address FROM users WHERE user_id = ?", [userId]);
+  if (!userDb.length || userDb[0].wallet_address?.toLowerCase() !== walletAddress.toLowerCase()) {
+    return res.status(403).json({ message: "Wallet mismatch: The connected wallet does not match the registered user." });
   }
 
   // Check election

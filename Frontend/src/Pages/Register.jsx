@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import { Hexagon, Mail, Lock, UserPlus, User as UserIcon, Sun, Moon, AlertCircle } from 'lucide-react';
+import { Hexagon, Mail, Lock, UserPlus, User as UserIcon, Sun, Moon, AlertCircle, Wallet } from 'lucide-react';
+import { connectWallet } from '../services/blockchainService';
 
 export default function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [walletAddress, setWalletAddress] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -16,13 +18,29 @@ export default function Register() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleWalletConnect = async () => {
+    try {
+      setError('');
+      const { address } = await connectWallet();
+      setWalletAddress(address);
+    } catch (err) {
+      setError(err.message || 'Failed to connect MetaMask');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!walletAddress) {
+      setError('Please connect your MetaMask wallet to register.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      await register(formData.name, formData.email, formData.password);
+      await register(formData.name, formData.email, formData.password, walletAddress);
       navigate('/login');
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
@@ -144,6 +162,21 @@ export default function Register() {
                   className="block w-full pl-11 py-2.5 sm:text-sm bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-900 dark:text-slate-100 placeholder-slate-400 transition-all duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:focus:ring-orange-500"
                 />
               </div>
+            </div>
+
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={handleWalletConnect}
+                className="w-full flex justify-center items-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium text-indigo-700 dark:text-indigo-300 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 border border-indigo-200 dark:border-indigo-500/30 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+              >
+                <Wallet className="w-4 h-4" />
+                {walletAddress ? (
+                  <span>Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
+                ) : (
+                  <span>Connect MetaMask Wallet</span>
+                )}
+              </button>
             </div>
 
             <button

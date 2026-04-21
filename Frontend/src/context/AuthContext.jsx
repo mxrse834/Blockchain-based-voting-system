@@ -39,9 +39,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const register = async (name, email, password) => {
+  const register = async (name, email, password, walletAddress) => {
     try {
-      const response = await api.post('/auth/register', { name, email, password });
+      const response = await api.post('/auth/register', { name, email, password, walletAddress });
       return response.data.data;
     } catch (error) {
       throw error;

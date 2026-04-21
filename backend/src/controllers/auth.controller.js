@@ -9,27 +9,40 @@ import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, walletAddress } = req.body;
 
   const trimmedName = name?.trim();
   const trimmedEmail = email?.trim().toLowerCase();
+  const trimmedWalletAddress = walletAddress?.trim().toLowerCase();
 
   if (!trimmedName || !trimmedEmail || !password) {
-    throw new ApiError(400, "All fields are required");
+    throw new ApiError(400, "Name, email, and password are required");
+  }
+
+  if (!trimmedWalletAddress) {
+    throw new ApiError(400, "Wallet address is required. Please connect your MetaMask wallet.");
   }
 
   if (password.length < 6) {
     throw new ApiError(400, "Password must be at least 6 characters");
-    }
+  }
     
   // Check if user already exists
-  const [existing] = await db.query(
+  const [existingUser] = await db.query(
     "SELECT user_id FROM users WHERE email = ?",
     [trimmedEmail]
   );
-
-  if (existing.length > 0) {
+  if (existingUser.length > 0) {
     throw new ApiError(409, "User already exists");
+  }
+
+  // Check if wallet already exists
+  const [existingWallet] = await db.query(
+    "SELECT user_id FROM users WHERE wallet_address = ?",
+    [trimmedWalletAddress]
+  );
+  if (existingWallet.length > 0) {
+    throw new ApiError(409, "Wallet already in use");
   }
 
   // Hash password
@@ -39,14 +52,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
   // Insert user
   await db.query(
-    `INSERT INTO users (user_id, name, email, password_hash, role)
-     VALUES (?, ?, ?, ?, 'VOTER')`,
-    [userId, trimmedName, trimmedEmail, hashedPassword]
+    `INSERT INTO users (user_id, name, email, wallet_address, password_hash, role)
+     VALUES (?, ?, ?, ?, ?, 'VOTER')`,
+    [userId, trimmedName, trimmedEmail, trimmedWalletAddress, hashedPassword]
   );
 
   // Fetch created user
   const [users] = await db.query(
-    `SELECT user_id, name, email, role, created_at
+    `SELECT user_id, name, email, wallet_address, role, created_at
      FROM users WHERE user_id = ?`,
     [userId]
   );

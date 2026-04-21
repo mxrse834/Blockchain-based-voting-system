@@ -47,9 +47,9 @@ export default function ConfirmModal({
         <h3 className="text-xl font-extrabold tracking-tight text-indigo-950 dark:text-slate-100 mb-2">
           {title}
         </h3>
-        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+        <div className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
           {message}
-        </p>
+        </div>
 
         {/* Actions */}
         <div className="flex items-center gap-3 justify-end">
