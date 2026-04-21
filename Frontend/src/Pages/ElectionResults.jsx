@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { ethers } from 'ethers';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
 import Layout from '../components/Layout';
@@ -7,6 +8,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import StatusBadge from '../components/StatusBadge';
 import Toast from '../components/Toast';
 import ResultsChart from '../components/ResultsChart';
+import { fetchElectionResults } from '../services/blockchainService';
 import { ArrowLeft, Users, Trophy, BarChart3 } from 'lucide-react';
 
 export default function ElectionResults() {
@@ -17,6 +19,7 @@ export default function ElectionResults() {
   const [myVote, setMyVote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [onChainResults, setOnChainResults] = useState(null);
 
   useEffect(() => { fetchData(); }, [electionId]);
 
@@ -30,6 +33,21 @@ export default function ElectionResults() {
       setElection(electionRes.data.data);
       setResults(resultsRes.data.data || []);
       setMyVote(myVoteRes.data.data);
+
+      // Also fetch on-chain results for cross-verification
+      try {
+        if (window.ethereum) {
+          const provider = new ethers.BrowserProvider(window.ethereum);
+          const candidateCount = (resultsRes.data.data || []).length;
+          if (candidateCount > 0) {
+            const chainResults = await fetchElectionResults(provider, candidateCount);
+            setOnChainResults(chainResults);
+          }
+        }
+      } catch (chainErr) {
+        // On-chain fetch is best-effort — don't block the page
+        console.warn('On-chain results unavailable:', chainErr.message);
+      }
     } catch (err) {
       setError('Failed to load results');
     } finally {
@@ -147,6 +165,11 @@ export default function ElectionResults() {
                       <div className="text-right flex flex-col items-end">
                         <span className="text-lg font-extrabold text-indigo-950 dark:text-slate-100">{pct}%</span>
                         <span className="text-xs font-medium text-slate-500 dark:text-slate-400">{result.vote_count} votes</span>
+                        {onChainResults && onChainResults[index] !== undefined && (
+                          <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                            ⛓ Chain: {onChainResults[index].votes}
+                          </span>
+                        )}
                       </div>
                     </div>
                     {/* Progress Bar Container */}

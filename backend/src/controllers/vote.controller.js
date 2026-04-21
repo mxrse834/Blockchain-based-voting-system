@@ -7,12 +7,17 @@ import blockchain from "../utils/blockchain.service.js";
 
 const castVote = asyncHandler(async (req, res) => {
   const { electionId } = req.params;
-  const { candidateId } = req.body;
+  const { candidateId, txHash } = req.body;
   const userId = req.user?.user_id;
 
   if (!userId) throw new ApiError(401, "Unauthorized");
   if (!isUuid(electionId)) throw new ApiError(400, "Invalid election id");
   if (!isUuid(candidateId)) throw new ApiError(400, "Invalid candidate id");
+
+  // Validate txHash format if provided (0x + 64 hex chars)
+  if (txHash && !/^0x[a-fA-F0-9]{64}$/.test(txHash)) {
+    throw new ApiError(400, "Invalid transaction hash format");
+  }
 
   // Check election
   const [election] = await db.query(
@@ -44,21 +49,22 @@ const castVote = asyncHandler(async (req, res) => {
   if (existing.length > 0 && existing[0].has_voted)
     throw new ApiError(409, "You have already voted");
 
-  // Insert or update voting_status
+  // Insert or update voting_status (now includes tx_hash)
   await db.query(
     `
-    INSERT INTO voting_status (user_id, election_id, has_voted, candidate_id, voted_at)
-    VALUES (?, ?, TRUE, ?, NOW())
+    INSERT INTO voting_status (user_id, election_id, has_voted, candidate_id, tx_hash, voted_at)
+    VALUES (?, ?, TRUE, ?, ?, NOW())
     ON DUPLICATE KEY UPDATE
       has_voted = TRUE,
       candidate_id = VALUES(candidate_id),
+      tx_hash = VALUES(tx_hash),
       voted_at = NOW()
     `,
-    [userId, electionId, candidateId]
+    [userId, electionId, candidateId, txHash || null]
   );
 
   return res.status(201).json(
-    new ApiResponse(201, { candidateId }, "Vote cast successfully")
+    new ApiResponse(201, { candidateId, txHash: txHash || null }, "Vote cast successfully")
   );
 });
 

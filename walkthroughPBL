@@ -1,0 +1,122 @@
+# Blockchain ↔ MERN Integration — Walkthrough
+
+## Summary
+
+Integrated the `SecureVoting.sol` smart contract into the existing Vota MERN-stack voting application. All changes are **additive** — no existing UI/CSS, database schemas, or Express routes were altered or deleted.
+
+---
+
+## What Changed
+
+### 🔧 Bug Fixes
+
+| File | Bug | Fix |
+|---|---|---|
+| [Voting.json](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/Frontend/src/contracts/Voting.json) | ABI referenced `castVote()` — contract function is `vote()` | Replaced with correct compiled ABI |
+| [server.js](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/backend/server.js) | `votingRoutes` imported but **never mounted** | Now mounted at `/votes` |
+| [.env](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/Frontend/.env) | Contract address was `0x0000...0000` (placeholder) | Updated to real deployed address |
+
+---
+
+### 📁 New Files
+
+| File | Purpose |
+|---|---|
+| [blockchainService.js](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/Frontend/src/services/blockchainService.js) | Central Web3 service — wallet connection, vote casting, election control, read queries |
+| [wallet.controller.js](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/backend/src/controllers/wallet.controller.js) | Security Proxy Mapping — link/verify MetaMask wallet to user account |
+| [wallet.routes.js](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/backend/src/routes/wallet.routes.js) | `POST /wallet/link` and `GET /wallet/verify` endpoints |
+| [wallet.migration.sql](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/backend/src/models/wallet.migration.sql) | `ALTER TABLE users ADD COLUMN wallet_address` |
+
+---
+
+### ✏️ Modified Files
+
+#### Frontend
+
+| File | Change |
+|---|---|
+| [VotingPage.jsx](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/Frontend/src/Pages/VotingPage.jsx) | Replaced inline `new ethers.Contract()` + `contract.castVote()` with `castVoteOnChain()` from service. Now sends `txHash` to backend. Zero UI changes. |
+| [VoterDashboard.jsx](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/Frontend/src/Pages/VoterDashboard.jsx) | Added wallet connection, on-chain voting, and `hasVoted` check via blockchainService. Added `isLoading` state for skeleton trigger during transactions. |
+| [AdminDashboard.jsx](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/Frontend/src/Pages/AdminDashboard.jsx) | "Deploy Election" button now calls `startElectionOnChain()`. Added "End Election" button calling `endElectionOnChain()`. Wallet connect flow added. |
+| [ElectionResults.jsx](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/Frontend/src/Pages/ElectionResults.jsx) | Added on-chain vote count cross-verification (best-effort, non-blocking). Shows `⛓ Chain: N` badge per candidate. |
+
+#### Backend
+
+| File | Change |
+|---|---|
+| [server.js](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/backend/server.js) | Added CORS, mounted `/votes` routes (was missing), mounted `/wallet` routes, added static file serving for uploads |
+| [vote.controller.js](file:///c:/Users/PIYUSH/Blockchain-based-voting-system/backend/src/controllers/vote.controller.js) | `castVote` now accepts optional `txHash` in body, validates format, stores in `voting_status.tx_hash` |
+
+---
+
+## Architecture
+
+```mermaid
+graph TD
+    subgraph "Frontend (React + Vite)"
+        VD["VoterDashboard"]
+        VP["VotingPage"]
+        AD["AdminDashboard"]
+        ER["ElectionResults"]
+        BS["blockchainService.js"]
+        API["api.js (Axios)"]
+    end
+    
+    subgraph "Smart Contract (Ethereum)"
+        SC["SecureVoting.sol"]
+    end
+    
+    subgraph "Backend (Express)"
+        SR["server.js"]
+        AR["auth.routes"]
+        VR["vote.routes"]
+        WR["wallet.routes"]
+        BCS["blockchain.service.js"]
+        DB["MySQL"]
+    end
+
+    VD --> BS
+    VP --> BS
+    AD --> BS
+    ER --> BS
+    BS --> SC
+    
+    VP --> API
+    API --> SR
+    SR --> AR
+    SR --> VR
+    SR --> WR
+    VR --> DB
+    WR --> DB
+    SR --> BCS
+    BCS --> SC
+```
+
+---
+
+## What Was Tested
+
+| Check | Result |
+|---|---|
+| `cors` installed in backend | ✅ |
+| `ethers` installed in frontend | ✅ |
+| Frontend `vite build` | ✅ Passes with no errors |
+| ABI function names match contract | ✅ `vote()` not `castVote()` |
+| Vote routes mounted at `/votes` | ✅ Fixed |
+
+---
+
+## Remaining Manual Steps
+
+> [!IMPORTANT]
+> **Run the database migration** before testing wallet linking:
+> ```sql
+> mysql -u root -p voting_system < backend/src/models/wallet.migration.sql
+> ```
+
+> [!NOTE]
+> **Contract redeployment**: If you need a fresh contract (e.g., new candidates), run:
+> ```bash
+> cd backend && node deploy.js
+> ```
+> Then update the contract address in `Frontend/.env` and `backend/.env`.

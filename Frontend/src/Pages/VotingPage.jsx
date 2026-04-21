@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { ethers } from 'ethers';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/api';
 import Layout from '../components/Layout';
@@ -9,7 +8,7 @@ import ConfirmModal from '../components/ConfirmModal';
 import WalletConnect from '../components/WalletConnect';
 import ElectionCountdown from '../components/ElectionCountdown';
 import StatusBadge from '../components/StatusBadge';
-import VotingABI from '../contracts/Voting.json';
+import { castVoteOnChain } from '../services/blockchainService';
 import { Vote, ArrowLeft, CheckCircle2, ExternalLink, Wallet, Timer, AlertCircle } from 'lucide-react';
 
 export default function VotingPage() {
@@ -76,19 +75,14 @@ export default function VotingPage() {
       }
 
       const signer = await provider.getSigner();
-      const contract = new ethers.Contract(
-        import.meta.env.VITE_CONTRACT_ADDRESS,
-        VotingABI.abi,
-        signer
-      );
-      
-      const tx = await contract.castVote(candidateIndex);
+      const tx = await castVoteOnChain(signer, candidateIndex);
       
       setTxStep(2); // Broadcasting / Transacting
       
-      // we can do the DB call now concurrently or wait
+      // Record vote in DB with the blockchain tx hash
       await api.post(`/votes/${electionId}`, {
-        candidateId: selectedCandidate
+        candidateId: selectedCandidate,
+        txHash: tx.hash
       });
       
       setTxStep(3); // Confirming
@@ -97,7 +91,13 @@ export default function VotingPage() {
       setTxHash(tx.hash);
       setVoteCast(true);
     } catch (err) {
-      setError(err.reason || err.message || 'Vote failed.');
+      if (err.response?.status === 409) {
+        setError("You have already cast your vote in this election. Duplicate votes are strictly prohibited.");
+      } else if (err.code === 'ACTION_REJECTED' || err.message?.includes('User denied')) {
+        setError("Transaction cancelled in MetaMask.");
+      } else {
+        setError("An error occurred while recording your vote. Please try again.");
+      }
     } finally {
       setTxPending(false);
       setTxStep(0);

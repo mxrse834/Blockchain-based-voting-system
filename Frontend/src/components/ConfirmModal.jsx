@@ -1,4 +1,4 @@
-import { AlertTriangle, X } from 'lucide-react';
+import { TriangleAlert, X } from 'lucide-react';
 
 export default function ConfirmModal({
   title = 'Confirm Action',
@@ -8,7 +8,7 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
   danger = false,
-  icon: Icon = AlertTriangle,
+  icon: Icon = TriangleAlert,
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -29,17 +29,19 @@ export default function ConfirmModal({
         </button>
 
         {/* Icon */}
-        <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-6 shadow-sm border ${
-          danger
-            ? 'bg-red-50 dark:bg-red-900/30 border-red-100 dark:border-red-800'
-            : 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800'
-        }`}>
-          <Icon className={`w-6 h-6 ${
+        {Icon && (
+          <div className={`w-12 h-12 rounded-lg flex items-center justify-center mb-6 shadow-sm border ${
             danger
-              ? 'text-red-600 dark:text-red-400'
-              : 'text-indigo-600 dark:text-indigo-400'
-          }`} />
-        </div>
+              ? 'bg-red-50 dark:bg-red-900/30 border-red-100 dark:border-red-800'
+              : 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-100 dark:border-indigo-800'
+          }`}>
+            <Icon className={`w-6 h-6 ${
+              danger
+                ? 'text-red-600 dark:text-red-400'
+                : 'text-indigo-600 dark:text-indigo-400'
+            }`} />
+          </div>
+        )}
 
         {/* Content */}
         <h3 className="text-xl font-extrabold tracking-tight text-indigo-950 dark:text-slate-100 mb-2">
