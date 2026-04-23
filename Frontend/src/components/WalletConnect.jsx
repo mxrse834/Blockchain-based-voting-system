@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ethers } from "ethers";
 
-export default function WalletConnect({ onConnected }) {
+export default function WalletConnect({ onConnected, walletAddress }) {
   const [address, setAddress] = useState(null);
   const [error, setError] = useState(null);
 
@@ -20,7 +20,9 @@ export default function WalletConnect({ onConnected }) {
     }
   }
 
-  if (address) return <div className="wallet-badge">Connected: {address.slice(0,6)}…{address.slice(-4)}</div>;
+  const activeAddress = walletAddress || address;
+
+  if (activeAddress) return <div className="wallet-badge">Connected: {activeAddress.slice(0,6)}…{activeAddress.slice(-4)}</div>;
   return (
     <div>
       <button id="btn-wallet-connect" className="btn-primary" onClick={connect}>Connect MetaMask</button>

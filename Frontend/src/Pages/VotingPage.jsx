@@ -221,7 +221,7 @@ export default function VotingPage() {
                   <h2 className="text-sm font-bold tracking-tight text-indigo-950 dark:text-slate-100 uppercase">Wallet</h2>
                 </div>
                 
-                <WalletConnect onConnected={handleWalletConnected} />
+                <WalletConnect onConnected={handleWalletConnected} walletAddress={walletAddress} />
                 
                 {walletAddress ? (
                   <div className="mt-4 p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/50 rounded-lg flex items-center gap-2">

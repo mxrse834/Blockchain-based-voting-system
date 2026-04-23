@@ -68,6 +68,7 @@ export default function Navbar() {
 
                 {/* Logout Button */}
                 <button
+                  id="btn-nav-logout"
                   onClick={handleLogout}
                   className="p-2 rounded-md text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                   aria-label="Logout"

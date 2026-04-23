@@ -84,6 +84,7 @@ export default function VoterElections() {
             {filters.map(f => (
               <button
                 key={f.key}
+                id={f.key === 'ACTIVE' ? 'filter-active-elections' : undefined}
                 onClick={() => setFilter(f.key)}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
                   filter === f.key
