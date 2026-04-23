@@ -62,6 +62,7 @@ export default function ElectionCard({ election, onAction, actionLabel }) {
       {onAction && (
         <div className="p-4 bg-slate-50 dark:bg-slate-950/50 mt-auto border-t border-slate-100 dark:border-slate-800">
           <button
+            id="btn-voter-view-elections"
             onClick={() => onAction(election.election_id)}
             disabled={election.status === 'UPCOMING'}
             className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-sm font-bold transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed

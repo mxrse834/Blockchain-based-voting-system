@@ -84,7 +84,7 @@ export default function VoterDashboard() {
             <div className="proposal">
 
               {!walletInfo && (
-                <button onClick={handleConnectWallet} disabled={isLoading}>
+                <button id="btn-wallet-connect" onClick={handleConnectWallet} disabled={isLoading}>
                   {isLoading ? "Connecting…" : "Connect Wallet"}
                 </button>
               )}
