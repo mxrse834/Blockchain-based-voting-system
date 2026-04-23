@@ -23,7 +23,7 @@ export default function WalletConnect({ onConnected }) {
   if (address) return <div className="wallet-badge">Connected: {address.slice(0,6)}…{address.slice(-4)}</div>;
   return (
     <div>
-      <button className="btn-primary" onClick={connect}>Connect MetaMask</button>
+      <button id="btn-wallet-connect" className="btn-primary" onClick={connect}>Connect MetaMask</button>
       {error && <p className="error-text">{error}</p>}
     </div>
   );

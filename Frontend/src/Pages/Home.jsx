@@ -68,8 +68,8 @@ export default function Home() {
 
             {/* Middle Nav Links */}
             <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-500 transition-colors">Features</a>
-              <a href="#how-it-works" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-500 transition-colors">How it works</a>
+              <a id="link-home-features" href="#features" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-500 transition-colors">Features</a>
+              <a id="link-home-how-works" href="#how-it-works" className="text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-orange-500 dark:hover:text-orange-500 transition-colors">How it works</a>
               
               {/* Managed Services Link */}
               <div className="relative group text-sm font-medium text-slate-600 dark:text-slate-400">
@@ -112,6 +112,7 @@ export default function Home() {
                 Log In
               </button>
               <button 
+                id="btn-home-cta"
                 onClick={() => navigate('/login')}
                 className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2 px-4 rounded-md transition-all active:scale-95 shadow-sm"
               >
