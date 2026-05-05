@@ -11,12 +11,36 @@ export default function WalletConnect({ onConnected }) {
       return;
     }
     try {
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0xaa36a7" }], // Sepolia Chain ID
+        });
+      } catch (switchError) {
+        if (switchError.code === 4902) {
+          await window.ethereum.request({
+            method: "wallet_addEthereumChain",
+            params: [
+              {
+                chainId: "0xaa36a7",
+                chainName: "Sepolia test network",
+                nativeCurrency: { name: "SepoliaETH", symbol: "SEP", decimals: 18 },
+                rpcUrls: ["https://rpc.sepolia.org"],
+                blockExplorerUrls: ["https://sepolia.etherscan.io"],
+              },
+            ],
+          });
+        } else {
+          throw switchError;
+        }
+      }
+
       const provider = new ethers.BrowserProvider(window.ethereum);
       const accounts = await provider.send("eth_requestAccounts", []);
       setAddress(accounts[0]);
       onConnected(provider, accounts[0]);
     } catch (e) {
-      setError("Wallet connection rejected.");
+      setError("Wallet connection or network switch rejected.");
     }
   }
 

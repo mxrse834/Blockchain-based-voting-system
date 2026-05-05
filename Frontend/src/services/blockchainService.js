@@ -28,6 +28,35 @@ export async function connectWallet() {
     throw new Error('MetaMask not found. Please install it.');
   }
 
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: "0xaa36a7" }], // Sepolia Chain ID
+    });
+  } catch (switchError) {
+    // This error code indicates that the chain has not been added to MetaMask.
+    if (switchError.code === 4902) {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [
+          {
+            chainId: "0xaa36a7",
+            chainName: "Sepolia test network",
+            nativeCurrency: {
+              name: "SepoliaETH",
+              symbol: "SEP",
+              decimals: 18,
+            },
+            rpcUrls: ["https://rpc.sepolia.org"],
+            blockExplorerUrls: ["https://sepolia.etherscan.io"],
+          },
+        ],
+      });
+    } else {
+      throw switchError;
+    }
+  }
+
   const provider = new ethers.BrowserProvider(window.ethereum);
   const accounts = await provider.send('eth_requestAccounts', []);
   const signer = await provider.getSigner();
