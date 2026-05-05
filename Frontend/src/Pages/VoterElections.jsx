@@ -7,13 +7,14 @@ import ElectionCard from '../components/ElectionCard';
 import EmptyState from '../components/EmptyState';
 import LoadingSpinner from '../components/LoadingSpinner';
 import SkeletonCard from '../components/SkeletonCard';
-import { Vote, Search, LayoutDashboard, Activity, Users } from 'lucide-react';
+import { Vote, Search, LayoutDashboard, Activity, Users, RefreshCw } from 'lucide-react';
 
 export default function VoterElections() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [elections, setElections] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [filter, setFilter] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -30,6 +31,12 @@ export default function VoterElections() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchElections();
+    setIsRefreshing(false);
   };
 
   const getFilteredElections = () => {
@@ -70,10 +77,21 @@ export default function VoterElections() {
       <div className="animate-fade-in w-full max-w-7xl mx-auto">
         {/* Page header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 mb-8">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-indigo-950 dark:text-slate-100 mb-2">
-              Available Elections
-            </h1>
+          <div className="flex flex-col gap-2 relative">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-indigo-950 dark:text-slate-100">
+                Available Elections
+              </h1>
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="flex items-center gap-2 bg-slate-100 dark:bg-[#1A1F36] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold p-2 sm:px-3 sm:py-1.5 rounded-md transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 border border-slate-200 dark:border-slate-700 shadow-sm"
+                title="Refresh Elections"
+              >
+                <RefreshCw className={`w-4 h-4 sm:w-5 sm:h-5 ${isRefreshing ? 'animate-spin text-indigo-500' : ''}`} />
+                <span className="hidden sm:inline text-sm">Refresh</span>
+              </button>
+            </div>
             <p className="text-sm font-medium text-slate-500 dark:text-slate-400">
               Select an active election to view details or cast your vote.
             </p>

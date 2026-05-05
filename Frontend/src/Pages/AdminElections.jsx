@@ -8,13 +8,14 @@ import StatusBadge from '../components/StatusBadge';
 import ConfirmModal from '../components/ConfirmModal';
 import EmptyState from '../components/EmptyState';
 import SkeletonCard from '../components/SkeletonCard';
-import { Plus, Settings, Trash2, Calendar, Clock, Vote, Search, LayoutDashboard, Activity, Users } from 'lucide-react';
+import { Plus, Settings, Trash2, Calendar, Clock, Vote, Search, LayoutDashboard, Activity, Users, RefreshCw } from 'lucide-react';
 
 export default function AdminElections() {
   const navigate = useNavigate();
   const { logout } = useAuth();
   const [elections, setElections] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -29,6 +30,12 @@ export default function AdminElections() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchElections();
+    setIsRefreshing(false);
   };
 
   const handleDelete = async () => {
@@ -60,13 +67,24 @@ export default function AdminElections() {
               {elections.length} election{elections.length !== 1 ? 's' : ''} in total
             </p>
           </div>
-          <button
-            onClick={() => navigate('/create-election')}
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-md transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 shadow-sm"
-          >
-            <Plus className="w-5 h-5" />
-            Create Election
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="flex items-center gap-2 bg-slate-100 dark:bg-[#1A1F36] hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold py-2 px-4 rounded-md transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500 border border-slate-200 dark:border-slate-700 shadow-sm"
+              title="Refresh Elections"
+            >
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin text-indigo-500' : ''}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+            <button
+              onClick={() => navigate('/create-election')}
+              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 px-4 rounded-md transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 shadow-sm"
+            >
+              <Plus className="w-5 h-5" />
+              Create Election
+            </button>
+          </div>
         </div>
 
         {/* Stats Overview */}
