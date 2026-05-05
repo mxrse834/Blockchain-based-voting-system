@@ -9,7 +9,7 @@ import WalletConnect from '../components/WalletConnect';
 import ElectionCountdown from '../components/ElectionCountdown';
 import StatusBadge from '../components/StatusBadge';
 import { castVoteOnChain } from '../services/blockchainService';
-import { Vote, ArrowLeft, CheckCircle2, ExternalLink, Wallet, Timer, AlertCircle } from 'lucide-react';
+import { Vote, ArrowLeft, CheckCircle2, ExternalLink, Wallet, Timer, AlertCircle, Copy, Check } from 'lucide-react';
 
 export default function VotingPage() {
   const navigate = useNavigate();
@@ -28,6 +28,7 @@ export default function VotingPage() {
   const [txStep, setTxStep] = useState(0);
   const [voteCast, setVoteCast] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -105,6 +106,13 @@ export default function VotingPage() {
       setTxPending(false);
       setTxStep(0);
     }
+  };
+
+  const handleCopyHash = () => {
+    if (!txHash) return;
+    navigator.clipboard.writeText(txHash);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   if (loading) return <Layout><LoadingSpinner message="Loading ballot..." /></Layout>;
@@ -315,25 +323,41 @@ export default function VotingPage() {
                 <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Blockchain Receipt</p>
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-sm text-slate-700 dark:text-slate-300 break-all">{txHash}</span>
-                  <a
-                    href={`http://localhost:8545/tx/${txHash}`}
-                    target="_blank"
-                    rel="noreferrer"
+                  <button
+                    onClick={handleCopyHash}
                     className="ml-4 p-2 bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded-md hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
-                    title="View on Block Explorer"
+                    title="Copy Transaction Hash"
                   >
-                    <ExternalLink className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                  </a>
+                    {copied ? (
+                      <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                    )}
+                  </button>
                 </div>
               </div>
             )}
 
-            <button
-              onClick={() => navigate('/voter-elections')}
-              className="px-6 py-3 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-sm font-bold rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 my-2"
-            >
-              Return to Active Elections
-            </button>
+            <div className="flex flex-col sm:flex-row justify-center gap-4 my-2">
+              <button
+                onClick={() => navigate('/voter-elections')}
+                className="px-6 py-3 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 text-sm font-bold rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              >
+                Return to Active Elections
+              </button>
+
+              {txHash && (
+                <a
+                  href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 flex items-center justify-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  Check on Blockchain
+                </a>
+              )}
+            </div>
           </div>
         )}
       </div>
